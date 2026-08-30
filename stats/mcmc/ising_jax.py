@@ -1,6 +1,7 @@
 import jax
 import jax.numpy as jnp
 from jax import random
+from functools import partial
 
 def _metropolis_step(carry, key):
     lattice, h, J = carry
@@ -25,6 +26,7 @@ def _simulate_one_chain(h, J, key, iterations):
     (final_lattice, _, _), _ = jax.lax.scan(_metropolis_step, (lattice, h, J), step_keys)
     return final_lattice
 
+@partial(jax.jit, static_argnames=['samples', 'iterations'])
 def simulate(h, J, samples, iterations=1000, key=None):
     if key is None:
         key = random.PRNGKey(0)

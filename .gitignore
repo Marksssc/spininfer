@@ -1,5 +1,6 @@
 test_ising.py
 test_potts.py
+testing_random.py
 __pycache__/
 *.pyc
 .env
