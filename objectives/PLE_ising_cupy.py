@@ -1,6 +1,6 @@
 import cupy as cp
 
-def gradient(h, J, data, empirical_mean_s, empirical_mean_ss):
+def value_and_gradient(h, J, data, empirical_mean_s, empirical_mean_ss):
     measurements, sites = data.shape
     inv_m = 1.0 / measurements
 
@@ -12,4 +12,11 @@ def gradient(h, J, data, empirical_mean_s, empirical_mean_ss):
     cp.fill_diagonal(J_grad, 0.0)
     J_grad = (J_grad + J_grad.T) / 2
 
+    log_probs = -cp.log1p(cp.exp(-2.0 * data * local_fields))
+    value = cp.sum(log_probs) * inv_m
+
+    return value, h_grad, J_grad
+
+def gradient(h, J, data, empirical_mean_s, empirical_mean_ss):
+    _, h_grad, J_grad = value_and_gradient(h, J, data, empirical_mean_s, empirical_mean_ss)
     return h_grad, J_grad
