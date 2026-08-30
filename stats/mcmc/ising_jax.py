@@ -1,0 +1,2 @@
+def simulate():
+    return None

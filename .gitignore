@@ -1,0 +1,17 @@
+test_ising.py
+test_potts.py
+__pycache__/
+*.pyc
+.env
+venv/
+env/
+*.mat
+*.npy
+*.csv
+.ipynb_checkpoints/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.tox/
+.coverage
