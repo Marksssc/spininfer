@@ -1,37 +1,27 @@
+from functools import lru_cache
 import numpy as np
+import itertools
+
+@lru_cache(maxsize=None)
+def _enumerate_all_states(n_sites: int, n_states: int):
+    states = np.array(list(itertools.product(np.arange(n_states), repeat=n_sites)))
+    return states
 
 def get_exact_statistics(h, J):
-    sites, states = np.shape(h)
-    num_states = states**sites
+    n_sites, n_states = h.shape
+    all_states = _enumerate_all_states(n_sites, n_states) 
+    one_hot = np.eye(n_states)[all_states]
 
-    total_z = 0.0
-    sum_means = np.zeros((sites, states))
-    sum_corrs = np.zeros((sites, sites, states, states))
-    state = np.zeros(sites, dtype=np.int32)
+    e_h = np.einsum('nia,ia->n', one_hot, h)
+    e_J = np.einsum('nia,njb,ijab->n', one_hot, one_hot, J) / 2.0
+    total_energy = e_h + e_J 
 
-    for ii in range(num_states):
-        temp = ii
+    max_e = total_energy.max()
+    weights = np.exp(total_energy - max_e)
+    Z = np.sum(weights)
+    probs = weights / Z 
 
-        for jj in range(sites):
-            state[jj] = temp % states
-            temp = temp//states
-        
-        energy = 0.0
-        for site in range(sites):
-            energy -= h[site, state[site]]
-            for site2 in range(sites):
-                if site == site2:
-                    continue
-                energy -= 0.5*J[site, site2, state[site], state[site2]]
+    mean_s = np.einsum('n,nia->ia', probs, one_hot)
+    mean_ss = np.einsum('n,nia,njb->ijab', probs, one_hot, one_hot)
     
-        weight = np.exp(-energy)
-        total_z += weight
-
-        for site in range(sites):
-            sum_means[site, state[site]] += weight
-            for site2 in range(sites):
-                if site == site2:
-                    continue
-                sum_corrs[site, site2, state[site], state[site2]] += weight
-    
-    return sum_means/total_z, sum_corrs/total_z
+    return mean_s, mean_ss
