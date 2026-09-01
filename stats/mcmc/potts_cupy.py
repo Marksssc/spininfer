@@ -24,7 +24,7 @@ def simulate(h, J, samples, iterations=1000, seed=0):
 
     for ii in range(iterations):
         sites_to_flip = cp.random.randint(0, sites, size=samples)
-        shift = cp.random.randint(0, states, size=samples)
+        shift = cp.random.randint(1, states, size=samples)
         flip_to = (lattice[chain_idx, sites_to_flip] + shift) % states
 
         energy_dif = get_energy_dif(h, J, lattice, chain_idx, sites_to_flip, flip_to)

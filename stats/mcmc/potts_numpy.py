@@ -1,13 +1,17 @@
 import numpy as np
 
-def get_energy_dif(h, J, spin, site, newstate, sites):
-    delta_E = 0
-    current_spin = spin[site]
-    delta_E = -h[site, newstate] - (-h[site, current_spin])
-    for ii in range(sites):
-        if ii != site:
-            delta_E += -J[site, ii, newstate, spin[ii]] - (-J[site, ii, current_spin, spin[ii]])
-    return delta_E
+def get_energy_dif(h, J, initial_lattice, chain_idx, sites_to_flip, flip_to):
+    old_states = initial_lattice[chain_idx, sites_to_flip]
+    mag_dif = h[sites_to_flip, flip_to] - h[sites_to_flip, old_states]
+
+    J_diff = J[sites_to_flip, :, flip_to, :] - J[sites_to_flip, :, old_states, :]
+
+    samples_idx = np.arange(len(chain_idx))[:, None]
+    sites_idx = np.arange(J.shape[0])[None, :]
+
+    int_dif = J_diff[samples_idx, sites_idx, initial_lattice].sum(axis=1)
+
+    return mag_dif + int_dif
 
 
 def simulate(h, J, samples, iterations=1000, seed=0):
