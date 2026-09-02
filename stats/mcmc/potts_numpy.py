@@ -18,23 +18,19 @@ def simulate(h, J, samples, iterations=1000, seed=0):
     np.random.seed(seed)
     # Get the initial random lattice
     sites, states = np.shape(h)
-    initial_lattice = np.random.randint(0, states, size=(samples, sites))
+    lattice = np.random.randint(0, states, size=(samples, sites))
+    chain_idx = np.arange(samples)
 
-    for ii in range(samples):
-        lattice_row = initial_lattice[ii, :]
-        for jj in range(iterations):
-            # Choosing which spin to flip and what that value is
-            spinflip = np.random.randint(sites)
-            current_state = lattice_row[spinflip]
+    for ii in range(iterations):
+        sites_to_flip = np.random.randint(0, sites, size=samples)
+        shift = np.random.randint(1, states, size=samples)
+        flip_to = (lattice[chain_idx, sites_to_flip] + shift) % states
 
-            # Getting new thing and making sure it is not the same
-            shift = np.random.randint(1, states)
-            new_state = (current_state + shift) % states
+        energy_dif = get_energy_dif(h, J, lattice, chain_idx, sites_to_flip, flip_to)
+        mask = (energy_dif <= 0.0) | (np.random.random(samples) < np.exp(-energy_dif))
+        
+        accepted_chains = chain_idx[mask]
+        accepted_sites = sites_to_flip[mask]
+        lattice[accepted_chains, accepted_sites] = flip_to[mask]
 
-            # Get the energy change
-            energy_change = get_energy_dif(h, J, lattice_row, spinflip, new_state, sites)
-
-            # Calculating whether to change my values
-            if energy_change <= 0 or np.random.random() < np.exp(-energy_change):
-                lattice_row[spinflip] = new_state
-    return initial_lattice
+    return lattice

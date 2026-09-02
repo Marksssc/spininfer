@@ -1,37 +1,21 @@
+from functools import lru_cache
 import numpy as np
+import itertools
+
+@lru_cache(maxsize=None)
+def _enumerate_all_states(n_sites: int):
+    states = np.array(list(itertools.product([-1.0, 1.0], repeat=n_sites)))
+    return states
 
 def get_exact_statistics(h, J):
-    sites, states = np.shape(h)
-    num_states = states**sites
+    n_sites = h.shape[0]
+    all_states = _enumerate_all_states(n_sites) 
 
-    total_z = 0.0
-    sum_means = np.zeros((sites, states))
-    sum_corrs = np.zeros((sites, sites, states, states))
-    state = np.zeros(sites, dtype=np.int32)
+    energies = - np.sum(h * all_states, axis=1) - 0.5 * np.einsum('ni,ij,nj->n', all_states, J, all_states)
+    weights = np.exp(-energies)
+    Z = np.sum(weights)
+    probs = weights / Z
 
-    for ii in range(num_states):
-        temp = ii
-
-        for jj in range(sites):
-            state[jj] = temp % states
-            temp = temp//states
-        
-        energy = 0.0
-        for site in range(sites):
-            energy -= h[site, state[site]]
-            for site2 in range(sites):
-                if site == site2:
-                    continue
-                energy -= 0.5*J[site, site2, state[site], state[site2]]
-    
-        weight = np.exp(-energy)
-        total_z += weight
-
-        for site in range(sites):
-            sum_means[site, state[site]] += weight
-            for site2 in range(sites):
-                if site == site2:
-                    continue
-                sum_corrs[site, site2, state[site], state[site2]] += weight
-    
-    return sum_means/total_z, sum_corrs/total_z
+    mean_s = np.sum(probs[:, None] * all_states, axis=0)
+    mean_ss = np.einsum('n,ni,nj->ij', probs, all_states, all_states)
+    return mean_s, mean_ss
