@@ -25,7 +25,8 @@ def test_moment_matching_recovery(loc_h, scale_h, loc_J, scale_J, max_err):
     fitter = InverseFitter(model=model, dataset=dataset, objective=objective,
                             optimizer=Adam(lr=0.05), n_steps=1000, verbose=False)
     h_init, J_init = model.random_params(seed=2)
-    h, J = fitter.fit(h_init, J_init)
+    result = fitter.fit(h_init, J_init)
+    h, J = result.h, result.J
 
     h_err = np.abs(h - truth.h).mean()
     J_err = np.abs(J - truth.J).mean()

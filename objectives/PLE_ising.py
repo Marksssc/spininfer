@@ -1,12 +1,17 @@
 # objectives/PLE_ising.py
 from dataclasses import dataclass
 from objectives.gradient import Gradient
-from objectives import PLE_ising_numpy, PLE_ising_numba
+from objectives import PLE_ising_numpy, PLE_ising_numba, PLE_ising_cupy, PLE_ising_jax
+from backend.registry import build_backend_dict
 
-_BACKENDS = {
-    "numpy": PLE_ising_numpy.value_and_gradient,
-    "numba": PLE_ising_numba.value_and_gradient,
-}
+_BACKENDS = build_backend_dict(
+    required={
+        "numba": PLE_ising_numba.compute_value_and_gradient,
+        "numpy": PLE_ising_numpy.compute_value_and_gradient,
+    },
+    optional={"cupy": PLE_ising_cupy.compute_value_and_gradient,
+              "jax": PLE_ising_jax.compute_value_and_gradient},
+)
 
 @dataclass
 class PleIsingObjective:

@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import numpy as np
 from dataclasses import dataclass
-from stats.mcmc import potts_numba, potts_numpy
+from stats.mcmc import potts_numba, potts_numpy, potts_cupy, potts_jax
 from stats.moments import Moments
 from backend.registry import build_backend_dict
 
 _BACKENDS = build_backend_dict(
-    required={"numpy": potts_numpy.simulate, "numba": potts_numba.simulate},
-    optional={},
+    required={
+        "numba": potts_numba.compute_value_and_gradient,
+        "numpy": potts_numpy.compute_value_and_gradient,
+    },
+    optional={"cupy": potts_cupy.compute_value_and_gradient,
+              "jax": potts_jax.compute_value_and_gradient},
 )
 
 @dataclass
