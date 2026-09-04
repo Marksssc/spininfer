@@ -11,8 +11,10 @@ def get_exact_statistics(h, J):
     n_sites = h.shape[0]
     all_states = _enumerate_all_states(n_sites) 
 
-    energies = - np.sum(h * all_states, axis=1) - 0.5 * np.einsum('ni,ij,nj->n', all_states, J, all_states)
-    weights = np.exp(-energies)
+    energies = np.sum(h * all_states, axis=1) + 0.5 * np.einsum('ni,ij,nj->n', all_states, J, all_states)
+    max_exp = energies.max()
+    weights = np.exp(energies - max_exp)
+
     Z = np.sum(weights)
     probs = weights / Z
 

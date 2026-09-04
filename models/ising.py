@@ -2,18 +2,28 @@ from __future__ import annotations
 from typing import Any
 
 from dataclasses import dataclass
-from stats.mcmc import ising_numba, ising_numpy
+from stats.mcmc import ising_numba as ising_mcmc_numba, ising_numpy as ising_mcmc_numpy
+from stats.exact import ising_numba as ising_exact_numba, ising_numpy as ising_exact_numpy
 from stats.moments import Moments
 from backend.registry import build_backend_dict
 from backend.array_backend import get_array_backend
 
 _BACKENDS = build_backend_dict(
     required={
-        "numba": ising_numba.simulate,
-        "numpy": ising_numpy.simulate,
+        "numba": ising_mcmc_numba.simulate,
+        "numpy": ising_mcmc_numpy.simulate,
     },
     optional={"cupy": ("stats.mcmc.ising_cupy", "simulate"),
               "jax": ("stats.mcmc.ising_jax", "simulate")},
+)
+
+_EXACT_BACKENDS = build_backend_dict(
+    required={
+        "numba": ising_exact_numba.get_exact_statistics,
+        "numpy": ising_exact_numpy.get_exact_statistics,
+    },
+    optional={"cupy": ("stats.exact.ising_cupy", "get_exact_statistics"),
+              "jax": ("stats.exact.ising_jax", "get_exact_statistics")},
 )
 
 @dataclass
@@ -65,3 +75,7 @@ class IsingModel:
         J = (J + J.T) / 2
         J = self.array_backend.zero_diagonal(J)
         return h, J
+
+    def exact_statistics(self, h, J):
+        self._validate_params(h, J)
+        return _EXACT_BACKENDS[self.backend](h, J)

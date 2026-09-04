@@ -17,8 +17,8 @@ def test_flatten_unflatten_roundtrip():
     h = rng.normal(size=8)
     J = rng.normal(size=(8, 8))
 
-    x = LbfgsFitter.flatten(h, J)
-    h_back, J_back = LbfgsFitter.unflatten(x, h.shape, J.shape)
+    x = LbfgsFitter.flatten(np, h, J)
+    h_back, J_back = LbfgsFitter.unflatten(np, x, h.shape, J.shape)
 
     assert np.array_equal(h_back, h)
     assert np.array_equal(J_back, J)
@@ -35,7 +35,7 @@ def test_lbfgs_recovers_parameters_ising():
     assert np.abs(h - truth.h).mean() < 0.05
     assert np.abs(J - truth.J).mean() < 0.05
 
-def test_lbfgs_recovers_parameters_ising():
+def test_lbfgs_recovers_parameters_potts():
     model = PottsModel(n_sites=15, n_states=3, backend="numba")
     truth = generate_data(model, n_samples=20_000, iterations=1000, seed=1)
     dataset = Dataset(samples=truth.samples, model=model)

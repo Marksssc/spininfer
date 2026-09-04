@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
-import numpy as np
+from typing import Any
 
 @dataclass
 class FitResult:
-    h: np.ndarray
-    J: np.ndarray
+    h: Any
+    J: Any
     converged: bool
     n_steps: int
     final_grad_norm: float
@@ -12,12 +12,14 @@ class FitResult:
 
 @dataclass
 class GradientNormConvergence:
+    model: object
     tol: float = 1e-6
     patience: int = 5
     _below_tol_count: int = field(default=0, init=False, repr=False)
 
     def check(self, grad, h, J) -> bool:
-        grad_norm = np.linalg.norm(grad.grad_h) + np.linalg.norm(grad.grad_J)
+        xp = self.model.array_backend.xp
+        grad_norm = xp.linalg.norm(grad.grad_h) + xp.linalg.norm(grad.grad_J)
         if grad_norm < self.tol:
             self._below_tol_count += 1
         else:
@@ -57,13 +59,15 @@ class MomentMatchConvergence:
         return self._below_tol_count >= self.patience
 
     def _matches(self, real, sim) -> bool:
+        xp = self.model.array_backend.xp
+
         real_flat, sim_flat = real.ravel(), sim.ravel()
-        if np.std(real_flat) < 1e-8 or np.std(sim_flat) < 1e-8:
+        if xp.std(real_flat) < 1e-8 or xp.std(sim_flat) < 1e-8:
             return False
-        pcc = np.corrcoef(real_flat, sim_flat)[0, 1]
-        slope, intercept = np.polyfit(real_flat, sim_flat, 1)
+        pcc = xp.corrcoef(real_flat, sim_flat)[0, 1]
+        slope, intercept = xp.polyfit(real_flat, sim_flat, 1)
         return (
             pcc > self.pcc_tol
             and abs(slope - 1.0) < self.slope_tol
-            and abs(intercept) < self.intercept_tol*np.abs(real_flat).mean()
+            and abs(intercept) < self.intercept_tol*xp.abs(real_flat).mean()
         )

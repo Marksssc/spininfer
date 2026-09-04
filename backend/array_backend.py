@@ -48,8 +48,6 @@ class JaxBackend:
         import jax
         return {"key": jax.random.PRNGKey(seed)}
 
-_BACKENDS = {"numpy": NumpyBackend, "numba": NumpyBackend, "cupy": CupyBackend, "jax": JaxBackend}
-
 _BACKENDS = {
     "numpy": NumpyBackend,
     "numba": NumpyBackend,

@@ -23,7 +23,7 @@ def test_MLE_recovery(loc_h, scale_h, loc_J, scale_J, max_err):
     dataset = Dataset(samples=truth.samples, model=model)
 
     objective = MomentMatchingObjective(estimator=ExactEstimator())
-    convergence = MomentMatchConvergence(model, dataset)
+    convergence = GradientNormConvergence()#MomentMatchConvergence(model, dataset)
     fitter = InverseFitter(model=model, dataset=dataset, objective=objective,
                             optimizer=Adam(lr=0.05), convergence=convergence, 
                             n_steps=10000, verbose=False)

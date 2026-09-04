@@ -16,7 +16,10 @@ def get_exact_statistics(h, J):
     all_states = _enumerate_all_states(n_sites) 
 
     energies = jax.vmap(_state_energy, in_axes=(None, None, 0))(h, J, all_states)
-    weights = jnp.exp(-energies)
+    exp = -energies
+    max_exp = exp.max()
+    weights = jnp.exp(exp - max_exp)
+
     Z = jnp.sum(weights)
     probs = weights / Z
 

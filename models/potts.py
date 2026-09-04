@@ -2,18 +2,28 @@ from __future__ import annotations
 from typing import Any
 
 from dataclasses import dataclass
-from stats.mcmc import potts_numba, potts_numpy
+from stats.mcmc import potts_numba as potts_mcmc_numba, potts_numpy as potts_mcmc_numpy
+from stats.exact import potts_numba as potts_exact_numba, potts_numpy as potts_exact_numpy
 from stats.moments import Moments
 from backend.registry import build_backend_dict
 from backend.array_backend import get_array_backend
 
 _BACKENDS = build_backend_dict(
     required={
-        "numba": potts_numba.simulate,
-        "numpy": potts_numpy.simulate,
+        "numba": potts_mcmc_numba.simulate,
+        "numpy": potts_mcmc_numpy.simulate,
     },
     optional={"cupy": ("stats.mcmc.potts_cupy", "simulate"),
               "jax": ("stats.mcmc.potts_jax", "simulate")},
+)
+
+_EXACT_BACKENDS = build_backend_dict(
+    required={
+        "numba": potts_exact_numba.get_exact_statistics,
+        "numpy": potts_exact_numpy.get_exact_statistics,
+    },
+    optional={"cupy": ("stats.exact.potts_cupy", "get_exact_statistics"),
+              "jax": ("stats.exact.potts_jax", "get_exact_statistics")},
 )
 
 @dataclass
@@ -86,5 +96,9 @@ class PottsModel:
         J_fixed = J_fixed * mask
 
         return h_fixed, J_fixed
+
+    def exact_statistics(self, h, J):
+        self._validate_params(h, J)
+        return _EXACT_BACKENDS[self.backend](h, J)
 
     
