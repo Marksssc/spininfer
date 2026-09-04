@@ -59,7 +59,8 @@ def test_lbfgs_moves_the_cost_in_the_right_direction():
     value_before, _ = objective.compute_value_and_gradient(model, h_init, J_init, dataset)
 
     fitter = LbfgsFitter(model=model, dataset=dataset, objective=objective, maxiter=500)
-    h, J = fitter.fit(h_init, J_init)
+    result = fitter.fit(h_init, J_init)
+    h, J = result.h, result.J
     value_after, _ = objective.compute_value_and_gradient(model, h, J, dataset)
 
     assert value_after > value_before
