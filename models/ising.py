@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Any
 
 from dataclasses import dataclass
 import numpy as np
@@ -34,8 +35,10 @@ class IsingModel:
             raise ValueError(f"h has shape {h.shape}, expected ({self.n_sites},)")
         if J.shape != (self.n_sites, self.n_sites):
             raise ValueError(f"J has shape {J.shape}, expected ({self.n_sites}, {self.n_sites})")
+        if not self.array_backend.xp.allclose(J, J.T):
+            raise ValueError(f"The coupling matrix is not symmetric")
 
-    def simulate(self, h, J, samples, iterations=1000, seed=0) -> np.ndarray:
+    def simulate(self, h, J, samples, iterations=1000, seed=0) -> Any:
         self._validate_params(h, J)
         
         h_array = self.array_backend.xp.asarray(h)
@@ -46,7 +49,7 @@ class IsingModel:
         kernel = _BACKENDS[self.backend]
         return kernel(h_array, J_array, samples, iterations, **kwargs)
 
-    def random_params(self, loc_h=0.0, scale_h =0.3, loc_J=0.0, scale_J=0.3, seed=0)-> tuple[np.ndarray, np.ndarray]:
+    def random_params(self, loc_h=0.0, scale_h =0.3, loc_J=0.0, scale_J=0.3, seed=0)-> tuple[Any, Any]:
         J = self.array_backend.random_normal((self.n_sites, self.n_sites), loc_J, scale_J, seed)
         h = self.array_backend.random_normal((self.n_sites,), loc_h, scale_h, seed + 1)
         
@@ -54,7 +57,7 @@ class IsingModel:
             h, J = self.apply_gauge(h, J)
         return h, J
 
-    def compute_moments(self, samples: np.ndarray) -> Moments:
+    def compute_moments(self, samples: Any) -> Moments:
         mean_s = samples.mean(axis=0)                     
         mean_ss = (samples.T @ samples) / samples.shape[0] 
         return Moments(mean_s=mean_s, mean_ss=mean_ss)
