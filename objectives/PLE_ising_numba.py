@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 
-@njit(fastmath=True)
+@njit(fastmath=True, parallel=True)
 def value_and_gradient(h, J, data, empirical_mean_s, empirical_mean_ss):
     measurements, sites = data.shape
     inv_m = 1.0 / measurements

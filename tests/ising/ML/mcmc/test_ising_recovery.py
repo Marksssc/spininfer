@@ -7,6 +7,7 @@ from objectives.moment_matching import MomentMatchingObjective
 from stats.mcmc_estimator import McmcEstimator
 from optimizers.adam import Adam
 from fitters.inverse_fitter import InverseFitter
+from convergence.criteria import GradientNormConvergence, MomentMatchConvergence
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, max_err", [
     pytest.param(0.0, 0.2, 0.0, 0.2, 0.05, id="easy_symmetric"),
@@ -22,8 +23,10 @@ def test_moment_matching_recovery(loc_h, scale_h, loc_J, scale_J, max_err):
     dataset = Dataset(samples=truth.samples, model=model)
 
     objective = MomentMatchingObjective(estimator=McmcEstimator(n_samples=5000))
+    convergence = GradientNormConvergence(model)#MomentMatchConvergence(model, dataset)
     fitter = InverseFitter(model=model, dataset=dataset, objective=objective,
-                            optimizer=Adam(lr=0.05), n_steps=1000, verbose=False)
+                           optimizer=Adam(lr=0.05), convergence=convergence,
+                           n_steps=1000, verbose=False)
     h_init, J_init = model.random_params(seed=2)
     result = fitter.fit(h_init, J_init)
     h, J = result.h, result.J

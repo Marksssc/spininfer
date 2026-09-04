@@ -6,6 +6,7 @@ from data.dataset import Dataset
 from objectives.PLE_potts import PlePottsObjective
 from optimizers.adam import Adam
 from fitters.inverse_fitter import InverseFitter
+from convergence.criteria import GradientNormConvergence, MomentMatchConvergence
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, n_states, max_err", [
     pytest.param(0.0, 0.2, 0.0, 0.2, 3, 0.05, id="easy_symmetric_3"),
@@ -22,8 +23,11 @@ def test_ple_recovery(loc_h, scale_h, loc_J, scale_J, n_states, max_err):
                            loc_h=loc_h, scale_h=scale_h, loc_J=loc_J, scale_J=scale_J)
     dataset = Dataset(samples=truth.samples, model=model)
 
-    fitter = InverseFitter(model=model, dataset=dataset, objective=PlePottsObjective(),
-                            optimizer=Adam(lr=0.05), n_steps=1000, verbose=False)
+    objective = PlePottsObjective()
+    convergence = GradientNormConvergence(model)
+    fitter = InverseFitter(model=model, dataset=dataset, objective=objective,
+                           optimizer=Adam(lr=0.05), convergence=convergence,
+                           n_steps=1000, verbose=False)
     h_init, J_init = model.random_params(seed=2)
     result = fitter.fit(h_init, J_init)
     h, J = result.h, result.J

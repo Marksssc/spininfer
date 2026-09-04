@@ -30,7 +30,8 @@ def test_lbfgs_recovers_parameters_ising():
 
     fitter = LbfgsFitter(model=model, dataset=dataset, objective=PleIsingObjective(), maxiter=500)
     h_init, J_init = model.random_params(seed=2)
-    h, J = fitter.fit(h_init, J_init)
+    result = fitter.fit(h_init, J_init)
+    h, J = result.h, result.J
 
     assert np.abs(h - truth.h).mean() < 0.05
     assert np.abs(J - truth.J).mean() < 0.05
@@ -42,7 +43,8 @@ def test_lbfgs_recovers_parameters_potts():
 
     fitter = LbfgsFitter(model=model, dataset=dataset, objective=PlePottsObjective(), maxiter=500)
     h_init, J_init = model.random_params(seed=2)
-    h, J = fitter.fit(h_init, J_init)
+    result = fitter.fit(h_init, J_init)
+    h, J = result.h, result.J
 
     assert np.abs(h - truth.h).mean() < 0.05
     assert np.abs(J - truth.J).mean() < 0.05

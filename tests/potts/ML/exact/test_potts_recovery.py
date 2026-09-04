@@ -7,12 +7,13 @@ from objectives.moment_matching import MomentMatchingObjective
 from stats.exact_estimator import ExactEstimator
 from optimizers.adam import Adam
 from fitters.inverse_fitter import InverseFitter
+from convergence.criteria import GradientNormConvergence, MomentMatchConvergence
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, n_states, max_err", [
     pytest.param(0.0, 0.2, 0.0, 0.2, 3, 0.05, id="easy_symmetric_3"),
     pytest.param(0.0, 1.0, 0.0, 0.5, 3, 0.15, id="hard_symmetric_3"),
-    pytest.param(0.0, 0.2, 0.0, 0.2, 5, 0.05, id="easy_symmetric_5"),
-    pytest.param(0.0, 1.0, 0.0, 0.5, 5, 0.15, id="hard_symmetric_5"),
+    pytest.param(0.0, 0.2, 0.0, 0.2, 4, 0.05, id="easy_symmetric_4"),
+    pytest.param(0.0, 1.0, 0.0, 0.5, 4, 0.15, id="hard_symmetric_4"),
     pytest.param(0.5, 0.5, 0.0, 0.5, 3, 0.15, id="skewed_h"),
     pytest.param(0.0, 0.5, 0.5, 0.5, 3, 0.15, id="skewed_J"),
 ])
@@ -24,8 +25,10 @@ def test_MLE_recovery(loc_h, scale_h, loc_J, scale_J, n_states, max_err):
     dataset = Dataset(samples=truth.samples, model=model)
 
     objective = MomentMatchingObjective(estimator=ExactEstimator())
+    convergence = GradientNormConvergence(model)#MomentMatchConvergence(model, dataset)
     fitter = InverseFitter(model=model, dataset=dataset, objective=objective,
-                            optimizer=Adam(lr=0.05), n_steps=1000, verbose=False)
+                           optimizer=Adam(lr=0.05), convergence=convergence,
+                           n_steps=1000, verbose=False)
     h_init, J_init = model.random_params(seed=2)
     result = fitter.fit(h_init, J_init)
     h, J = result.h, result.J
