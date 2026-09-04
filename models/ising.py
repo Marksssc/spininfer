@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Any
 
 from dataclasses import dataclass
-import numpy as np
 from stats.mcmc import ising_numba, ising_numpy
 from stats.moments import Moments
 from backend.registry import build_backend_dict

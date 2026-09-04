@@ -1,5 +1,3 @@
-import numpy as np
-
 from dataclasses import dataclass
 from objectives.gradient import Gradient
 from objectives import PLE_potts_numpy, PLE_potts_numba

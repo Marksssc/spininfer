@@ -1,12 +1,12 @@
 from __future__ import annotations
 from dataclasses import dataclass
-import numpy as np
+from typing import Any
 
 @dataclass
 class SyntheticDataset:
-    h: np.ndarray
-    J: np.ndarray
-    samples: np.ndarray
+    h: Any
+    J: Any
+    samples: Any
     seed: int
 
 def generate_data(model, n_samples, iterations=1000, seed=0, h=None, J=None,

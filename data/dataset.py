@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
-import numpy as np
+from typing import Any
 from stats.moments import Moments
 
 @dataclass
 class Dataset:
-    samples: np.ndarray 
+    samples: Any 
     model: object
     moments: Moments = field(init=False)
 

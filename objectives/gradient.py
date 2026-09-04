@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-import numpy as np
+from typing import Any
 
 @dataclass
 class Gradient:
-    grad_h: np.ndarray
-    grad_J: np.ndarray
+    grad_h: Any
+    grad_J: Any

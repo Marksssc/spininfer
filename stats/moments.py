@@ -1,8 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
-import numpy as np
+from typing import Any
 
 @dataclass
 class Moments:
-    mean_s: np.ndarray
-    mean_ss: np.ndarray
+    mean_s: Any
+    mean_ss: Any
