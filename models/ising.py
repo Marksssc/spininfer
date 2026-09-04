@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import numpy as np
-from stats.mcmc import ising_numba, ising_numpy, ising_cupy, ising_jax
+from stats.mcmc import ising_numba, ising_numpy
 from stats.moments import Moments
 from backend.registry import build_backend_dict
 
 _BACKENDS = build_backend_dict(
     required={
-        "numba": ising_numba.compute_value_and_gradient,
-        "numpy": ising_numpy.compute_value_and_gradient,
+        "numba": ising_numba.simulate,
+        "numpy": ising_numpy.simulate,
     },
-    optional={"cupy": ising_cupy.compute_value_and_gradient,
-              "jax": ising_jax.compute_value_and_gradient},
+    optional={"cupy": ("stats.mcmc.ising_cupy", "simulate"),
+              "jax": ("stats.mcmc.ising_jax", "simulate")},
 )
 
 @dataclass
