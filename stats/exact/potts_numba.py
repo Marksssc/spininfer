@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit, prange
+from numba import njit
 
 @njit(fastmath=True)
 def get_exact_statistics(h, J):
@@ -32,8 +32,6 @@ def get_exact_statistics(h, J):
         for site in range(sites):
             sum_means[site, state[site]] += weight
             for site2 in range(sites):
-                if site == site2:
-                    continue
                 sum_corrs[site, site2, state[site], state[site2]] += weight
     
     return sum_means/total_z, sum_corrs/total_z
