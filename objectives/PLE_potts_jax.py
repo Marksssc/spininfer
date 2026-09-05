@@ -1,24 +1,23 @@
 import jax 
 import jax.numpy as jnp
+import jax.nn
 
 def _scalar_log_pseudolikelihood(h, J, data):
     measurements, sites = data.shape
     n_states = h.shape[1]
     inv_m = 1.0 / measurements
+
     one_hot = jnp.eye(n_states)[data]
 
     energy = h[None, :, :] + jnp.einsum('ijab,njb->nia', J, one_hot)
 
-    max_energy = energy.max(axis=2, keepdims=True) 
-    exp_energy = jnp.exp(energy - max_energy)             
-    sum_exp = exp_energy.sum(axis=2, keepdims=True)                   
-    cond_prob = exp_energy / sum_exp
-
     observed_energy = jnp.einsum('nia,nia->ni', energy, one_hot)
-    log_lik = observed_energy - max_energy[:, :, 0] - jnp.log(sum_exp[:, :, 0])
-    value = log_lik.sum() * inv_m
 
-    return value
+    log_z = jax.nn.logsumexp(energy, axis=2)
+
+    log_lik = observed_energy - log_z                
+
+    return log_lik.sum() * inv_m
 
 @jax.jit
 def _value_and_grad(h, J, data):
