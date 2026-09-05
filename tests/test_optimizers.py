@@ -34,13 +34,14 @@ def test_step_applies_gauge(optimizer_cls):
 def test_adam_state_persists_across_steps():
     model = IsingModel(n_sites=5, backend="numpy")
     h, J = model.random_params(seed=0)
-    grad_h, grad_J = np.ones_like(h), np.zeros_like(J)
+    grad_h_a, grad_J_a = np.ones_like(h), np.zeros_like(J)
+    grad_h_b, grad_J_b = -0.5 * np.ones_like(h), np.zeros_like(J)
 
     optimizer = Adam(lr=0.1)
-    h1, J1 = optimizer.step(h, J, grad_h, grad_J, model)
-    h2, J2 = optimizer.step(h1, J1, grad_h, grad_J, model)
+    h1, J1 = optimizer.step(h, J, grad_h_a, grad_J_a, model)
+    h2, J2 = optimizer.step(h1, J1, grad_h_b, grad_J_b, model)
 
     fresh = Adam(lr=0.1)
-    h2_fresh, _ = fresh.step(h1, J1, grad_h, grad_J, model)
+    h2_fresh, _ = fresh.step(h1, J1, grad_h_b, grad_J_b, model)
 
     assert not np.allclose(h2, h2_fresh)
