@@ -37,7 +37,7 @@ def simulate(h, J, samples, iterations=1000, seed=0):
         old_states = lattice[chain_idx, sites_to_flip]
         flip_to = (old_states + shift) % states
 
-        energy_dif = get_energy_dif(h, J, lattice, chain_idx, sites_to_flip, flip_to, samples_idx, sites_idx)
+        energy_dif = -get_energy_dif(h, J, lattice, chain_idx, sites_to_flip, flip_to, samples_idx, sites_idx)
         
         p_accept = jax.random.uniform(k_accept, shape=(samples,))
         mask = (energy_dif <= 0.0) | (p_accept < jnp.exp(-energy_dif))

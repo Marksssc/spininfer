@@ -26,7 +26,7 @@ def simulate(h, J, samples, iterations=1000, seed=0):
         shift = np.random.randint(1, states, size=samples)
         flip_to = (lattice[chain_idx, sites_to_flip] + shift) % states
 
-        energy_dif = get_energy_dif(h, J, lattice, chain_idx, sites_to_flip, flip_to)
+        energy_dif = -get_energy_dif(h, J, lattice, chain_idx, sites_to_flip, flip_to)
         mask = (energy_dif <= 0.0) | (np.random.random(samples) < np.exp(-energy_dif))
         
         accepted_chains = chain_idx[mask]
