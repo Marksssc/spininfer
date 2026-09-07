@@ -16,7 +16,7 @@ class NumpyBackend:
         return J
     def random_normal(self, shape, loc, scale, seed):
         return np.random.default_rng(seed).normal(loc, scale, size=shape)
-    def get_kernel_kwargs(self, seed: int) -> dict: # ADDED
+    def get_kernel_kwargs(self, seed: int) -> dict:
         return {"seed": seed}
 
 @dataclass
@@ -29,7 +29,7 @@ class CupyBackend:
         return J
     def random_normal(self, shape, loc, scale, seed):
         return self.xp.random.default_rng(seed).normal(loc, scale, size=shape)
-    def get_kernel_kwargs(self, seed: int) -> dict: # ADDED
+    def get_kernel_kwargs(self, seed: int) -> dict:
         return {"seed": seed}
 
 @dataclass
@@ -44,7 +44,7 @@ class JaxBackend:
         import jax
         key = jax.random.PRNGKey(seed)
         return loc + scale * jax.random.normal(key, shape)
-    def get_kernel_kwargs(self, seed: int) -> dict: # ADDED
+    def get_kernel_kwargs(self, seed: int) -> dict:
         import jax
         return {"key": jax.random.PRNGKey(seed)}
 
