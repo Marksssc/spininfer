@@ -163,7 +163,7 @@ A couple of tests (`test_backend_consistency.py` under `tests/ising/PLE` and `te
 
 ## Known Limitations
 - **Memory limits for exact statistics:** Exact enumeration currently has no size guard. Calling `model.exact_statistics(...)` on a large system will result in an out-of-memory error rather than a safe exit. Stick to MCMC for larger systems.
-- **JAX L-BFGS constraints:** The JAX path for `LbfgsFitter` uses `jax.scipy.optimize.minimize`, which has a narrower API than SciPy's (no callbacks, BFGS only). It is operational but less battle-tested than the NumPy/Numba paths.
+- **JAX L-BFGS constraints:** The JAX path for `LbfgsFitter` uses `jax.scipy.optimize.minimize`, which has a narrower API than SciPy's (no callbacks, BFGS only). It is operational but less tested than the NumPy/Numba paths.
 - **Gauge fixing:** `model.apply_gauge` is applied after every optimizer step so that `h` and `J` stay in a consistent, symmetric, zero-diagonal representation. If comparing recovered parameters against another library, ensure both are evaluated in the same gauge.
 
 ## Roadmap
