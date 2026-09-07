@@ -11,7 +11,7 @@ Please note that a section with the likelihood, pseudolikelihood and gradient de
 - **Two models**: Ising (binary ±1 spins) and Potts (`q`-state categorical).
 - **Four array backends**: `numpy`, `numba`, `cupy`, `jax` with the same interface, which can be swapped by an input string. `cupy`/`jax` are optional and the library falls back if these are not installed.
 - **Two ways to compute model statistics**: exact enumeration (small systems only) and MCMC (Metropolis, scales to hundreds of sites but can take considerable computing and time).
-- **Two fitting objectives**: pseudolikelihood (fast, no sampling needed during fitting) and moment matching (slower, needs a statistics estimator (see above), but is not biased
+- **Two fitting objectives**: pseudolikelihood (fast, no sampling needed during fitting) and moment matching (slower, needs a statistics estimator (see above), but is not biased.
 - **Two optimizers**: Gradient ascent and Adam optimizer.
 - **Two fitters**: a self-made gradient loop, and an L-BFGS wrapper around `scipy.optimize.minimize` for when you want faster convergence and don't need a custom step rule.
 
