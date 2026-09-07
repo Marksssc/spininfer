@@ -1,10 +1,21 @@
-[build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "dca-lib"
+name = "spininfer"
 version = "0.1.0"
+description = "Inverse Ising/Potts model fitting via pseudolikelihood and moment matching, with numpy/numba/cupy/jax backends."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "numba>=0.58",
+]
 
-[tool.setuptools]
-packages = ["backend", "convergence", "models", "stats", "data", "optimizers", "objectives", "tests", "fitters"]
+[project.optional-dependencies]
+gpu = ["cupy>=12.0"]
+jax = ["jax>=0.4", "jaxlib>=0.4"]
+plots = ["matplotlib>=3.7"]
+dev = ["pytest>=7.0"]
+
+[tool.setuptools.packages.find]
+include = ["backend*", "convergence*", "models*", "data*", "optimizers*", "objectives*", "fitters*", "stats*"]
+exclude = ["tests*"]
