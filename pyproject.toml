@@ -14,6 +14,7 @@ dependencies = [
 gpu = ["cupy>=12.0"]
 jax = ["jax>=0.4", "jaxlib>=0.4"]
 plots = ["matplotlib>=3.7"]
+msa = ["biopython>=1.81"]
 dev = ["pytest>=7.0"]
 
 [tool.setuptools.packages.find]
