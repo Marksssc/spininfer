@@ -50,7 +50,6 @@ def _build_lookup_table() -> np.ndarray:
 
 
 _LOOKUP_TABLE = _build_lookup_table()
-print(_LOOKUP_TABLE)
 
 def _guess_format(path: str) -> str:
     suffix = Path(path).suffix.lower()
