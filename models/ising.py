@@ -26,6 +26,13 @@ _EXACT_BACKENDS = build_backend_dict(
               "jax": ("stats.exact.ising_jax", "get_exact_statistics")},
 )
 
+_EXACT_THERMO_BACKENDS = build_backend_dict(
+    required={"numba": ising_exact_numba.get_exact_thermodynamics,
+              "numpy": ising_exact_numpy.get_exact_thermodynamics},
+    optional={"cupy": ("stats.exact.ising_cupy", "get_exact_thermodynamics"),
+              "jax": ("stats.exact.ising_jax", "get_exact_thermodynamics")},
+)
+
 @dataclass
 class IsingModel:
     n_sites: int
@@ -79,3 +86,7 @@ class IsingModel:
     def exact_statistics(self, h, J):
         self._validate_params(h, J)
         return _EXACT_BACKENDS[self.backend](h, J)
+
+    def exact_thermodynamics(self, h, J):
+        self._validate_params(h, J)
+        return _EXACT_THERMO_BACKENDS[self.backend](h, J)

@@ -4,6 +4,7 @@ from typing import Any
 
 @dataclass
 class Thermodynamics:
-    entropy: Any
-    energy: Any
-    free_energy: Any
+    entropy: float
+    energy: float
+    free_energy: float
+    heat_capacity: float

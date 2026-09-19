@@ -30,6 +30,8 @@ def get_exact_statistics(h, J):
 def get_exact_thermodynamics(h, J):
     _, probs, energies, log_Z = _exact_distribution(h, J)
 
-    enthalpy = np.sum(probs * energies)
+    enthalpy = -np.sum(probs * energies)
     entropy = -np.sum(np.where(probs > 0, probs * np.log(probs), 0.0))
-    return entropy, enthalpy
+    mean_e2 = np.sum(probs * energies**2)
+    heat_capacity = mean_e2 - enthalpy**2
+    return entropy, enthalpy, heat_capacity
