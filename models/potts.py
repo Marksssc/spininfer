@@ -26,6 +26,15 @@ _EXACT_BACKENDS = build_backend_dict(
               "jax": ("stats.exact.potts_jax", "get_exact_statistics")},
 )
 
+_EXACT_THERMO_BACKENDS = build_backend_dict(
+    required={
+        "numba": potts_exact_numba.get_exact_thermodynamics,
+        "numpy": potts_exact_numpy.get_exact_thermodynamics,
+    },
+    optional={"cupy": ("stats.exact.potts_cupy", "get_exact_thermodynamics"),
+              "jax": ("stats.exact.potts_jax", "get_exact_thermodynamics")},
+)
+
 @dataclass
 class PottsModel:
     n_sites: int
@@ -100,5 +109,10 @@ class PottsModel:
     def exact_statistics(self, h, J):
         self._validate_params(h, J)
         return _EXACT_BACKENDS[self.backend](h, J)
+
+    def exact_thermodynamics(self, h, J):
+        self._validate_params(h, J)
+        return _EXACT_THERMO_BACKENDS[self.backend](h, J)
+
 
     
