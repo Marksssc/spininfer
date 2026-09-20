@@ -91,6 +91,21 @@ class PottsModel:
         mean_ss = self.array_backend.xp.einsum('nia,njb->ijab', one_hot, one_hot) / samples.shape[0]
         return Moments(mean_s=mean_s, mean_ss=mean_ss)
 
+    def compute_energy(self, h, J, samples) -> Any:
+        xp = self.array_backend.xp
+        one_hot = xp.eye(self.n_states)[samples]
+        e_h = xp.einsum('nia,ia->n', one_hot, h)
+        e_J = 0.5 * xp.einsum('nia,njb,ijab->n', one_hot, one_hot, J)
+        return -(e_h + e_J)
+
+    def interaction_energy(self, J, mean_ss) -> Any:
+        return 0.5 * self.array_backend.xp.einsum('ijab,ijab->', J, mean_ss)
+
+    def reference_free_energy(self, h) -> Any:
+        xp = self.array_backend.xp
+        m = xp.max(h, axis=1, keepdims=True)
+        return -xp.sum(xp.log(xp.sum(xp.exp(h - m), axis=1)) + m.squeeze(axis=1))
+
     def apply_gauge(self, h, J) -> tuple[Any, Any]:
         h_fixed = h - self.array_backend.xp.mean(h, axis=1, keepdims=True)
         
@@ -113,6 +128,3 @@ class PottsModel:
     def exact_thermodynamics(self, h, J):
         self._validate_params(h, J)
         return _EXACT_THERMO_BACKENDS[self.backend](h, J)
-
-
-    

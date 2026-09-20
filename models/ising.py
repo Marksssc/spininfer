@@ -78,6 +78,19 @@ class IsingModel:
         mean_ss = (samples.T @ samples) / samples.shape[0] 
         return Moments(mean_s=mean_s, mean_ss=mean_ss)
 
+    def compute_energy(self, h, J, samples) -> Any:
+        xp = self.array_backend.xp
+        e_h = samples @ h
+        e_J = 0.5 * xp.einsum('ni,ij,nj->n', samples, J, samples)
+        return -(e_h + e_J)
+
+    def interaction_energy(self, J, mean_ss) -> Any:
+        return 0.5 * self.array_backend.xp.einsum('ij,ij->', J, mean_ss)
+
+    def reference_free_energy(self, h) -> Any:
+        xp = self.array_backend.xp
+        return -xp.sum(xp.logaddexp(h, -h))
+
     def apply_gauge(self, h, J):
         J = (J + J.T) / 2
         J = self.array_backend.zero_diagonal(J)
