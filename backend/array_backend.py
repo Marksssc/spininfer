@@ -27,8 +27,8 @@ class CupyBackend:
     def zero_diagonal(self, J):
         self.xp.fill_diagonal(J, 0.0)
         return J
-    def random_normal(self, shape, loc, scale, seed):
-        return self.xp.random.default_rng(seed).normal(loc, scale, size=shape)
+    def random_normal(self, shape, loc, scale, seed): #This choice was made for seed consistency
+        return self.xp.asarray(np.random.default_rng(seed).normal(loc, scale, size=shape))
     def get_kernel_kwargs(self, seed: int) -> dict:
         return {"seed": seed}
 
@@ -40,10 +40,8 @@ class JaxBackend:
     def zero_diagonal(self, J):
         n = J.shape[0]
         return J.at[self.xp.diag_indices(n)].set(0.0)
-    def random_normal(self, shape, loc, scale, seed):
-        import jax
-        key = jax.random.PRNGKey(seed)
-        return loc + scale * jax.random.normal(key, shape)
+    def random_normal(self, shape, loc, scale, seed): #This choice was made for seed consistency
+        return self.xp.asarray(np.random.default_rng(seed).normal(loc, scale, size=shape))
     def get_kernel_kwargs(self, seed: int) -> dict:
         import jax
         return {"key": jax.random.PRNGKey(seed)}

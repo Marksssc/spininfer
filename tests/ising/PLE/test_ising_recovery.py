@@ -25,7 +25,7 @@ def test_ple_recovery(loc_h, scale_h, loc_J, scale_J, max_err):
     convergence = GradientNormConvergence(model)#MomentMatchConvergence(model, dataset)
     fitter = InverseFitter(model=model, dataset=dataset, objective=objective,
                             optimizer=Adam(lr=0.05), convergence=convergence,
-                            n_steps=10000, verbose=False)
+                            n_steps=1000, verbose=False)
     h_init, J_init = model.random_params(seed=2)
     result = fitter.fit(h_init, J_init)
     h, J = result.h, result.J

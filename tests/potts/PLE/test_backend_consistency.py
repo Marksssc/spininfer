@@ -28,6 +28,7 @@ def test_consistency():
         (val_cp, hg_cp, Jg_cp, "cupy"),
         (val_jx, hg_jx, Jg_jx, "jax"),
     ]:
-        assert np.isclose(val_np, val), f"value mismatch: numpy vs {name}"
-        assert np.allclose(hg_np, hg), f"h gradient mismatch: numpy vs {name}"
-        assert np.allclose(Jg_np, Jg), f"J gradient mismatch: numpy vs {name}"
+        rtol, atol = (1e-3, 1e-5) if name == "jax" else (1e-5, 1e-8) # on some devices jax automatically switches to less precise matrix operations
+        assert np.isclose(val_np, val, rtol=rtol, atol=atol), f"value mismatch: numpy vs {name}"
+        assert np.allclose(hg_np, hg, rtol=rtol, atol=atol), f"h gradient mismatch: numpy vs {name}"
+        assert np.allclose(Jg_np, Jg, rtol=rtol, atol=atol), f"J gradient mismatch: numpy vs {name}"

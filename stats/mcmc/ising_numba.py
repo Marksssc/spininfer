@@ -1,6 +1,8 @@
 import numpy as np
 from numba import njit, prange
 
+_CHAIN_SEED_STRIDE = 1_000_003
+
 @njit(inline='always', fastmath=True)
 def delta_energy(h, J, spins, site_change):
     s_i = spins[site_change]
@@ -10,12 +12,15 @@ def delta_energy(h, J, spins, site_change):
 
 @njit(parallel=True, fastmath=True)
 def simulate(h, J, samples, iterations=1000, seed=0):
-    np.random.seed(seed)
     sites = len(h)
-    lattice = (np.random.randint(0, 2, size=(samples, sites))*2 - 1).astype(np.float64)
+    lattice = np.empty((samples, sites))
 
     for ii in prange(samples):
+        np.random.seed(seed * _CHAIN_SEED_STRIDE + ii)
         lattice_row = lattice[ii, :]
+        for kk in range(sites):
+            lattice_row[kk] = 1.0 if np.random.random() < 0.5 else -1.0
+
         local_field = h + (J@lattice_row)
         for jj in range(iterations):
             site_to_flip = np.random.randint(sites)

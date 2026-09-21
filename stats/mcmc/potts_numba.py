@@ -1,6 +1,8 @@
 import numpy as np
 from numba import njit, prange
 
+_CHAIN_SEED_STRIDE = 1_000_003
+
 @njit(inline='always', fastmath=True)
 def get_energy_dif(h, J, spin, site, newstate, sites):
     delta_E = 0
@@ -14,13 +16,16 @@ def get_energy_dif(h, J, spin, site, newstate, sites):
 
 @njit(parallel=True, fastmath=True)
 def simulate(h, J, samples, iterations=1000, seed=0):
-    np.random.seed(seed)
     # Get the initial random lattice
     sites, states = np.shape(h)
-    initial_lattice = np.random.randint(0, states, size=(samples, sites))
+    lattice = np.empty((samples, sites), dtype=np.int64)
 
     for ii in prange(samples):
-        lattice_row = initial_lattice[ii, :]
+        np.random.seed(seed * _CHAIN_SEED_STRIDE + ii)
+        lattice_row = lattice[ii, :]
+        for kk in range(sites):
+            lattice_row[kk] = np.random.randint(0, states)
+
         for jj in range(iterations):
             # Choosing which spin to flip and what that value is
             spinflip = np.random.randint(sites)
@@ -36,4 +41,4 @@ def simulate(h, J, samples, iterations=1000, seed=0):
             # Calculating whether to change my values
             if energy_change <= 0 or np.random.random() < np.exp(-energy_change):
                 lattice_row[spinflip] = new_state
-    return initial_lattice
+    return lattice

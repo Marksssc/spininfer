@@ -14,10 +14,11 @@ def get_energy_dif(h, J, lattice, chain_idx, sites_to_flip, flip_to, samples_idx
     return mag_dif + int_dif
 
 @partial(jax.jit, static_argnames=("samples", "iterations"))
-def simulate(h, J, samples, iterations=1000, seed=0):
+def simulate(h, J, samples, iterations=1000, key=None):
     sites, states = h.shape
     
-    key = jax.random.PRNGKey(seed)
+    if key is None:
+        key = jax.random.PRNGKey(0)
     key, subkey = jax.random.split(key)
     
     lattice = jax.random.randint(subkey, shape=(samples, sites), minval=0, maxval=states)
