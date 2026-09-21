@@ -106,18 +106,27 @@ class PottsModel:
         m = xp.max(h, axis=1, keepdims=True)
         return -xp.sum(xp.log(xp.sum(xp.exp(h - m), axis=1)) + m.squeeze(axis=1))
 
-    def apply_gauge(self, h, J) -> tuple[Any, Any]:
-        h_fixed = h - self.array_backend.xp.mean(h, axis=1, keepdims=True)
-        
-        row_mean = self.array_backend.xp.mean(J, axis=3, keepdims=True)
-        col_mean = self.array_backend.xp.mean(J, axis=2, keepdims=True)
-        tot_mean = self.array_backend.xp.mean(J, axis=(2, 3), keepdims=True)
-        J_fixed = J - row_mean - col_mean + tot_mean
+    def apply_gauge(self, h, J) -> tuple[Any, Any]:  
+        '''
+        Potts model is overparametrized, apply gauge fix to be in the "Ising gauge",
+        following the method outlined by ekeberg et al.
+        '''      
+        xp = self.array_backend.xp
+        mask = 1.0 - xp.eye(self.n_sites)[:, :, None, None]
 
-        J_fixed = (J_fixed + J_fixed.transpose(1, 0, 3, 2)) / 2.0
+        J_sym = (J + J.transpose(1, 0, 3, 2)) / 2.0
 
-        mask = 1.0 - self.array_backend.xp.eye(self.n_sites)[:, :, None, None]
-        J_fixed = J_fixed * mask
+        row_mean = xp.mean(J_sym, axis=3, keepdims=True)
+        col_mean = xp.mean(J_sym, axis=2, keepdims=True)
+        tot_mean = xp.mean(J_sym, axis=(2, 3), keepdims=True)
+
+        J_fixed = (J_sym - row_mean - col_mean + tot_mean) * mask
+
+        idx = xp.arange(self.n_sites)
+        diag_self = xp.diagonal(J_sym[idx, idx], axis1=1, axis2=2)   # J_ii(a,a) per site
+        compensation = xp.sum((row_mean - tot_mean) * mask, axis=1).squeeze(-1)
+        h_fixed = h + compensation + 0.5 * diag_self
+        h_fixed = h_fixed - xp.mean(h_fixed, axis=1, keepdims=True)
 
         return h_fixed, J_fixed
 

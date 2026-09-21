@@ -1,7 +1,14 @@
 import numpy as np
 import pytest
+import itertools
 from models.ising import IsingModel
 from models.potts import PottsModel
+
+def _all_states(model):
+    if isinstance(model, IsingModel):
+        return np.array(list(itertools.product([-1, 1], repeat=model.n_sites)))
+    return np.array(list(itertools.product(range(model.n_states), repeat=model.n_sites)))
+
 
 @pytest.mark.parametrize("model", [
     IsingModel(n_sites=6, backend="numpy"),
@@ -47,3 +54,25 @@ def test_gauge_is_idempotent(model):
 
     assert np.allclose(h1, h2)
     assert np.allclose(J1, J2)
+
+@pytest.mark.parametrize("model", [
+    IsingModel(n_sites=4, backend="numpy"),
+    PottsModel(n_sites=4, n_states=3, backend="numpy"),
+])
+def test_gauge_preserves_distribution(model):
+    rng = np.random.default_rng(2)
+    if isinstance(model, IsingModel):
+        h = rng.normal(size=model.n_sites)
+        J = rng.normal(size=(model.n_sites, model.n_sites))
+    else:
+        h = rng.normal(size=(model.n_sites, model.n_states))
+        J = rng.normal(size=(model.n_sites, model.n_sites, model.n_states, model.n_states))
+
+    h_gauge, J_gauge = model.apply_gauge(h, J)
+
+    states = _all_states(model)
+    energy = model.compute_energy(h, J, states)
+    energy_gauge = model.compute_energy(h_gauge, J_gauge, states)
+
+    shift = energy - energy_gauge
+    assert np.allclose(shift, shift[0], atol=1e-8)
