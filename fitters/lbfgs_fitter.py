@@ -50,7 +50,7 @@ class LbfgsFitter:
         def cost_and_grad(x):
             h, J = to_arrays(x)
             value, grad = self.objective.compute_value_and_gradient(self.model, h, J, self.dataset)
-            grad_h, grad_J = self.model.apply_gauge(grad.grad_h, grad.grad_J)
+            grad_h, grad_J = self.model.project_to_gauge(grad.grad_h, grad.grad_J)
 
             latest["grad"] = Gradient(grad_h=grad_h, grad_J=grad_J)
             flat_grad = -self.flatten(xp, grad_h, grad_J)

@@ -130,6 +130,22 @@ class PottsModel:
 
         return h_fixed, J_fixed
 
+    def project_to_gauge(self, h, J):
+        """Zero-sum/zero-diagonal projection used by optimizer steps and gradient projection.
+        Not a gauge transform: no diag_self compensation, since h_new/J_new here may be a raw
+        parameter update whose J diagonal reflects gradient signal, not a real self-energy."""
+        xp = self.array_backend.xp
+        mask = 1.0 - xp.eye(self.n_sites)[:, :, None, None]
+
+        J_sym = (J + J.transpose(1, 0, 3, 2)) / 2.0
+        row_mean = xp.mean(J_sym, axis=3, keepdims=True)
+        col_mean = xp.mean(J_sym, axis=2, keepdims=True)
+        tot_mean = xp.mean(J_sym, axis=(2, 3), keepdims=True)
+        J_fixed = (J_sym - row_mean - col_mean + tot_mean) * mask
+
+        h_fixed = h - xp.mean(h, axis=1, keepdims=True)
+        return h_fixed, J_fixed
+
     def exact_statistics(self, h, J):
         self._validate_params(h, J)
         return _EXACT_BACKENDS[self.backend](h, J)

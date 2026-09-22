@@ -76,3 +76,15 @@ def test_gauge_preserves_distribution(model):
 
     shift = energy - energy_gauge
     assert np.allclose(shift, shift[0], atol=1e-8)
+
+def test_project_to_gauge_does_not_corrupt_h_from_gradient_diagonal():
+    model = PottsModel(6, 3, backend="numpy")
+    rng = np.random.default_rng(0)
+    h = rng.normal(size=(6, 3))
+    J = rng.normal(size=(6, 6, 3, 3)) * 0.3
+    J = (J + J.transpose(1, 0, 3, 2)) / 2
+    idx = np.arange(6); J[idx, idx] = 0.0
+    J[idx, idx] = np.eye(3) * 0.5   # simulate a raw update whose diagonal mirrors grad_h, like a real optimizer step would produce
+    h_proj, _ = model.project_to_gauge(h, J)
+    assert np.allclose(h_proj, h - h.mean(axis=1, keepdims=True))  # no extra shift from J's diagonal
+

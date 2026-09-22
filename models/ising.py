@@ -91,10 +91,13 @@ class IsingModel:
         xp = self.array_backend.xp
         return -xp.sum(xp.logaddexp(h, -h))
 
-    def apply_gauge(self, h, J):
+    def project_to_gauge(self, h, J):
         J = (J + J.T) / 2
         J = self.array_backend.zero_diagonal(J)
         return h, J
+
+    def apply_gauge(self, h, J):
+        return self.project_to_gauge(h, J)
 
     def exact_statistics(self, h, J):
         self._validate_params(h, J)

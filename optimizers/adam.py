@@ -36,5 +36,5 @@ class Adam:
         J_new = J + self.lr * m_J_hat / (xp.sqrt(v_J_hat) + self.eps)
 
         if model is not None:
-            h_new, J_new = model.apply_gauge(h_new, J_new)
+            h_new, J_new = model.project_to_gauge(h_new, J_new)
         return h_new, J_new
