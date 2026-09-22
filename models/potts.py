@@ -35,8 +35,12 @@ _EXACT_THERMO_BACKENDS = build_backend_dict(
               "jax": ("stats.exact.potts_jax", "get_exact_thermodynamics")},
 )
 
+Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
+
 @dataclass
 class PottsModel:
+    """Generalized Potts model over `n_sites` sites, each with `n_states` states, with pluggable array backends."""
+
     n_sites: int
     n_states: int
     backend: str="numba"
@@ -60,7 +64,8 @@ class PottsModel:
         if not self.array_backend.xp.allclose(J, J.transpose(1, 0, 3, 2)):
             raise ValueError(f"The coupling matrix is not symmetric")
 
-    def simulate(self, h, J, samples, iterations=1000, seed=0) -> Any:
+    def simulate(self, h: Array, J: Array, samples: int, iterations: int = 1000, seed: int = 0) -> Array:
+        """Draw `samples` state configurations via MCMC with the parameters (h, J). Returns an array shaped (samples, n_sites)."""
         self._validate_params(h, J)
 
         h_array = self.array_backend.xp.asarray(h)
@@ -72,7 +77,15 @@ class PottsModel:
         return kernel(h_array, J_array, samples, iterations, **kwargs)
         
 
-    def random_params(self, loc_h=0.0, scale_h =0.3, loc_J=0.0, scale_J=0.3, seed=0) -> tuple[Any, Any]:
+    def random_params(
+        self,
+        loc_h: float = 0.0,
+        scale_h: float = 0.3,
+        loc_J: float = 0.0,
+        scale_J: float = 0.3,
+        seed: int = 0,
+    ) -> tuple[Array, Array]:
+        """Sample random (h, J) from independent Gaussians, gauge-fixed if self.gauge is True, otherwise symmetrized and masked."""
         J = self.array_backend.random_normal((self.n_sites, self.n_sites, self.n_states, self.n_states), loc_J, scale_J, seed)
         h = self.array_backend.random_normal((self.n_sites, self.n_states), loc_h, scale_h, seed + 1)
 
@@ -85,28 +98,32 @@ class PottsModel:
 
         return h, J
 
-    def compute_moments(self, samples: Any) -> Moments:
+    def compute_moments(self, samples: Array) -> Moments:
+        """Compute empirical first and second moments (one-hot based) from a sample array of shape (n_samples, n_sites)."""
         one_hot = self.array_backend.xp.eye(self.n_states)[samples]
         mean_s = one_hot.mean(axis=0)             
         mean_ss = self.array_backend.xp.einsum('nia,njb->ijab', one_hot, one_hot) / samples.shape[0]
         return Moments(mean_s=mean_s, mean_ss=mean_ss)
 
-    def compute_energy(self, h, J, samples) -> Any:
+    def compute_energy(self, h: Array, J: Array, samples: Array) -> Array:
+        """Compute the Potts energy for each sample in `samples`, shape (n_samples,)."""
         xp = self.array_backend.xp
         one_hot = xp.eye(self.n_states)[samples]
         e_h = xp.einsum('nia,ia->n', one_hot, h)
         e_J = 0.5 * xp.einsum('nia,njb,ijab->n', one_hot, one_hot, J)
         return -(e_h + e_J)
 
-    def interaction_energy(self, J, mean_ss) -> Any:
+    def interaction_energy(self, J: Array, mean_ss: Array) -> float:
+        """Compute the average interaction energy contributed by the coupling term."""
         return 0.5 * self.array_backend.xp.einsum('ijab,ijab->', J, mean_ss)
 
-    def reference_free_energy(self, h) -> Any:
+    def reference_free_energy(self, h: Array) -> float:
+        """Compute the free energy of the non-interacting (J=0) reference system with fields h."""
         xp = self.array_backend.xp
         m = xp.max(h, axis=1, keepdims=True)
         return -xp.sum(xp.log(xp.sum(xp.exp(h - m), axis=1)) + m.squeeze(axis=1))
 
-    def apply_gauge(self, h, J) -> tuple[Any, Any]:  
+    def apply_gauge(self, h: Array, J: Array) -> tuple[Array, Array]:
         '''
         Potts model is overparametrized, apply gauge fix to be in the "Ising gauge",
         following the method outlined by ekeberg et al.
@@ -130,7 +147,7 @@ class PottsModel:
 
         return h_fixed, J_fixed
 
-    def project_to_gauge(self, h, J):
+    def project_to_gauge(self, h: Array, J: Array) -> tuple[Array, Array]:
         """Zero-sum/zero-diagonal projection used by optimizer steps and gradient projection.
         Not a gauge transform: no diag_self compensation, since h_new/J_new here may be a raw
         parameter update whose J diagonal reflects gradient signal, not a real self-energy."""
@@ -146,10 +163,12 @@ class PottsModel:
         h_fixed = h - xp.mean(h, axis=1, keepdims=True)
         return h_fixed, J_fixed
 
-    def exact_statistics(self, h, J):
+    def exact_statistics(self, h: Array, J: Array) -> tuple[Array, Array]:
+        """Compute exact (mean_s, mean_ss) via full enumeration over n_states**n_sites states."""
         self._validate_params(h, J)
         return _EXACT_BACKENDS[self.backend](h, J)
 
-    def exact_thermodynamics(self, h, J):
+    def exact_thermodynamics(self, h: Array, J: Array) -> tuple[float, float, float]:
+        """Compute exact (entropy, enthalpy, heat_capacity) via full enumeration over n_states**n_sites states."""
         self._validate_params(h, J)
         return _EXACT_THERMO_BACKENDS[self.backend](h, J)

@@ -1,11 +1,18 @@
 import math
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 from scipy.optimize import minimize
 
 from objectives.gradient import Gradient
 from convergence.criteria import FitResult
+from models import Model
+
+Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
+Objective = Any  # e.g. MomentMatchingObjective | PleIsingObjective | PlePottsObjective | RegularizedObjective
+Dataset = Any  # data.dataset.Dataset
+Convergence = Any  # e.g. GradientNormConvergence | MomentMatchConvergence | None
 
 
 class _ConvergedEarly(Exception):
@@ -14,20 +21,24 @@ class _ConvergedEarly(Exception):
 
 @dataclass
 class LbfgsFitter:
-    model: object
-    objective: object
-    dataset: object
-    convergence: object = None
+    """Fits (h, J) via scipy's L-BFGS-B optimizer."""
+
+    model: Model
+    objective: Objective
+    dataset: Dataset
+    convergence: Convergence = None
     tol: float = 1e-6
     maxiter: int = 500
-    scipy_kwargs: dict = field(default_factory=dict)
+    scipy_kwargs: dict[str, Any] = field(default_factory=dict)
 
     @staticmethod
-    def flatten(xp, h, J):
+    def flatten(xp: Any, h: Array, J: Array) -> Array:
+        """Flatten and concatenate h and J into a single 1D array."""
         return xp.concatenate([h.ravel(), J.ravel()])
 
     @staticmethod
-    def unflatten(xp, x, h_shape, J_shape):
+    def unflatten(xp: Any, x: Array, h_shape: tuple[int, ...], J_shape: tuple[int, ...]) -> tuple[Array, Array]:
+        """Inverse of flatten: split a 1D array back into (h, J) with the given shapes."""
         n_h = int(math.prod(h_shape))
         return x[:n_h].reshape(h_shape), x[n_h:].reshape(J_shape)
 
@@ -36,7 +47,8 @@ class LbfgsFitter:
             return array.get()
         return np.asarray(array)
 
-    def fit(self, h_init, J_init):
+    def fit(self, h_init: Array, J_init: Array) -> FitResult:
+        """Run L-BFGS-B to convergence (or maxiter), returning the final FitResult."""
         xp = self.model.array_backend.xp
 
         h0, J0 = self.model.apply_gauge(h_init, J_init)

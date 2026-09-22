@@ -8,6 +8,8 @@ from stats.moments import Moments
 from backend.registry import build_backend_dict
 from backend.array_backend import get_array_backend
 
+Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
+
 _BACKENDS = build_backend_dict(
     required={
         "numba": ising_mcmc_numba.simulate,
@@ -35,6 +37,8 @@ _EXACT_THERMO_BACKENDS = build_backend_dict(
 
 @dataclass
 class IsingModel:
+    """Pairwise Ising model over `n_sites` binary spins, with pluggable array backends."""
+
     n_sites: int
     backend: str = "numba"
     gauge: bool=True
@@ -46,7 +50,7 @@ class IsingModel:
             )
         self.array_backend = get_array_backend(self.backend)
 
-    def _validate_params(self, h, J) -> None:
+    def _validate_params(self, h: Array, J: Array) -> None:
         if h.shape != (self.n_sites,):
             raise ValueError(f"h has shape {h.shape}, expected ({self.n_sites},)")
         if J.shape != (self.n_sites, self.n_sites):
@@ -54,7 +58,12 @@ class IsingModel:
         if not self.array_backend.xp.allclose(J, J.T):
             raise ValueError(f"The coupling matrix is not symmetric")
 
-    def simulate(self, h, J, samples, iterations=1000, seed=0) -> Any:
+    def simulate(self, h: Array, J: Array, samples: int, iterations=1000, seed=0) -> Array:
+        """
+        Draw 'sample' spin configurations via MCMC with the parameters (h, J).
+
+        Returns an array shaped(samples, n_sites)
+        """
         self._validate_params(h, J)
         
         h_array = self.array_backend.xp.asarray(h)
@@ -65,7 +74,8 @@ class IsingModel:
         kernel = _BACKENDS[self.backend]
         return kernel(h_array, J_array, samples, iterations, **kwargs)
 
-    def random_params(self, loc_h=0.0, scale_h =0.3, loc_J=0.0, scale_J=0.3, seed=0)-> tuple[Any, Any]:
+    def random_params(self, loc_h=0.0, scale_h =0.3, loc_J=0.0, scale_J=0.3, seed=0)-> tuple[Array, Array]:
+        """Sample random (h, J) from independent Gaussians, optionally gauge-fixed if self.gauge is True."""
         J = self.array_backend.random_normal((self.n_sites, self.n_sites), loc_J, scale_J, seed)
         h = self.array_backend.random_normal((self.n_sites,), loc_h, scale_h, seed + 1)
         
@@ -73,36 +83,44 @@ class IsingModel:
             h, J = self.apply_gauge(h, J)
         return h, J
 
-    def compute_moments(self, samples: Any) -> Moments:
+    def compute_moments(self, samples: Array) -> Moments:
+        """Compute empirical first and second moments from a sample array of shape (n_samples, n_sites)."""
         mean_s = samples.mean(axis=0)                     
         mean_ss = (samples.T @ samples) / samples.shape[0] 
         return Moments(mean_s=mean_s, mean_ss=mean_ss)
 
-    def compute_energy(self, h, J, samples) -> Any:
+    def compute_energy(self, h: Array, J: Array, samples: Array) -> Array:
+        """Compute the Ising energy for each sample in `samples`, shape (n_samples,)."""
         xp = self.array_backend.xp
         e_h = samples @ h
         e_J = 0.5 * xp.einsum('ni,ij,nj->n', samples, J, samples)
         return -(e_h + e_J)
 
-    def interaction_energy(self, J, mean_ss) -> Any:
+    def interaction_energy(self, J: Array, mean_ss: Array) -> float:
+        """Compute the average interaction energy contributed by the coupling term."""
         return 0.5 * self.array_backend.xp.einsum('ij,ij->', J, mean_ss)
 
-    def reference_free_energy(self, h) -> Any:
+    def reference_free_energy(self, h: Array) -> float:
+        """Compute the free energy of the non-interacting (J=0) reference system with fields h."""
         xp = self.array_backend.xp
         return -xp.sum(xp.logaddexp(h, -h))
 
-    def project_to_gauge(self, h, J):
+    def project_to_gauge(self, h: Array, J: Array) -> tuple[Array, Array]:
+        """Symmetrize J and zero its diagonal; h is passed through unchanged."""
         J = (J + J.T) / 2
         J = self.array_backend.zero_diagonal(J)
         return h, J
 
-    def apply_gauge(self, h, J):
+    def apply_gauge(self, h: Array, J: Array) -> tuple[Array, Array]:
+        """Apply the model's gauge-fixing convention to (h, J)."""
         return self.project_to_gauge(h, J)
 
-    def exact_statistics(self, h, J):
+    def exact_statistics(self, h: Array, J: Array) -> tuple[Array, Array]:
+        """Compute exact (mean_s, mean_ss) via full enumeration over 2**n_sites states."""
         self._validate_params(h, J)
         return _EXACT_BACKENDS[self.backend](h, J)
 
-    def exact_thermodynamics(self, h, J):
+    def exact_thermodynamics(self, h: Array, J: Array) -> tuple[float, float, float]:
+        """Compute exact (entropy, enthalpy, heat_capacity) via full enumeration over 2**n_sites states."""
         self._validate_params(h, J)
         return _EXACT_THERMO_BACKENDS[self.backend](h, J)
