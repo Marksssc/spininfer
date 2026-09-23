@@ -1,20 +1,28 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from models import Model
+
+Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
+
 @dataclass
 class Adam:
+    """Adam optimizer for (h, J), with gauge re-projection after each step."""
+
     lr: float = 0.001
     beta1: float = 0.9
     beta2: float = 0.999
     eps: float = 1e-8
-    _m_h: Any = field(default=None, repr=False)
-    _v_h: Any = field(default=None, repr=False)
-    _m_J: Any = field(default=None, repr=False)
-    _v_J: Any = field(default=None, repr=False)
+    _m_h: Array = field(default=None, repr=False)
+    _v_h: Array = field(default=None, repr=False)
+    _m_J: Array = field(default=None, repr=False)
+    _v_J: Array = field(default=None, repr=False)
     _t: int = 0
 
 
-    def step(self, h, J, grad_h, grad_J, model):
+    def step(self, h: Array, J: Array, grad_h: Array, grad_J: Array, model: Model | None) -> tuple[Array, Array]:
+        """Take one Adam step on (h, J), updating the internal moment estimates, and gauge-project the result if `model` is given."""
         xp = model.array_backend.xp
 
         if self._m_h is None:

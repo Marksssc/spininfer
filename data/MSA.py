@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 from data.dataset import Dataset
+from models import Model
 
 AMINO_ACID_DICT = {"-": 0,
                    "A": 1,
@@ -43,6 +44,7 @@ _UNKNOWN = -1
 
 
 def _build_lookup_table() -> np.ndarray:
+    """Build a length-128 ASCII lookup table mapping amino-acid characters to their integer state (unknown chars -> -1)."""
     table = np.full(128, _UNKNOWN, dtype=np.int64)
     for char, state in AMINO_ACID_DICT.items():
         table[ord(char)] = state
@@ -52,6 +54,7 @@ def _build_lookup_table() -> np.ndarray:
 _LOOKUP_TABLE = _build_lookup_table()
 
 def _guess_format(path: str) -> str:
+    """Infer the MSA file format from `path`'s extension, raising ValueError if it's not recognized."""
     suffix = Path(path).suffix.lower()
     if suffix not in _EXTENSION_TO_FORMAT:
         raise ValueError(
@@ -62,6 +65,7 @@ def _guess_format(path: str) -> str:
 
 
 def _read_a3m(path: str) -> list[str]:
+    """Parse an a3m/a2m file into aligned sequences, dropping insert-state (lowercase/'.') columns."""
     sequences = []
     current = []
     with open(path) as f:
@@ -82,6 +86,7 @@ def _read_a3m(path: str) -> list[str]:
 
 
 def _sequences_to_array(sequences: Sequence[str]) -> np.ndarray:
+    """Encode equal-length amino-acid sequences into an integer array via AMINO_ACID_DICT, raising ValueError on inconsistent lengths or unrecognized characters."""
     lengths = {len(seq) for seq in sequences}
     if len(lengths) != 1:
         raise ValueError(f"sequences have inconsistent lengths after parsing: {sorted(lengths)}")
@@ -97,6 +102,7 @@ def _sequences_to_array(sequences: Sequence[str]) -> np.ndarray:
 
 
 def load_convert_MSA_file(MSA_path: str, fmt: str | None = None) -> np.ndarray:
+    """Load an MSA file (format guessed from extension unless `fmt` is given) and return it as an integer-encoded array."""
     fmt = fmt or _guess_format(MSA_path)
 
     if fmt in ("a3m", "a2m"):
@@ -109,6 +115,7 @@ def load_convert_MSA_file(MSA_path: str, fmt: str | None = None) -> np.ndarray:
     return _sequences_to_array(sequences)
 
 
-def potts_dataset_from_msa(model, MSA_path: str, fmt: str | None = None) -> Dataset:
+def potts_dataset_from_msa(model: Model, MSA_path: str, fmt: str | None = None) -> Dataset:
+    """Load an MSA file and wrap it as a Dataset for `model`."""
     samples = load_convert_MSA_file(MSA_path, fmt=fmt)
     return Dataset(samples=samples, model=model)

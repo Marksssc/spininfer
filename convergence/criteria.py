@@ -1,10 +1,19 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from models import Model
+from objectives.gradient import Gradient
+
+Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
+Dataset = Any  # data.dataset.Dataset
+
 @dataclass
 class FitResult:
-    h: Any
-    J: Any
+    """Outcome of a fitter run: final (h, J), whether convergence was reached, and diagnostics."""
+
+    h: Array
+    J: Array
     converged: bool
     n_steps: int
     final_grad_norm: float
@@ -12,12 +21,15 @@ class FitResult:
 
 @dataclass
 class GradientNormConvergence:
-    model: object
+    """Declares convergence once the gradient norm stays below `tol` for `patience` consecutive checks."""
+
+    model: Model
     tol: float = 1e-6
     patience: int = 5
     _below_tol_count: int = field(default=0, init=False, repr=False)
 
-    def check(self, grad, h, J) -> bool:
+    def check(self, grad: Gradient, h: Array, J: Array) -> bool:
+        """Update the below-tolerance streak from `grad`'s norm and return True once it reaches `patience`."""
         xp = self.model.array_backend.xp
         grad_norm = xp.linalg.norm(grad.grad_h) + xp.linalg.norm(grad.grad_J)
         if grad_norm < self.tol:
@@ -29,8 +41,11 @@ class GradientNormConvergence:
 
 @dataclass
 class MomentMatchConvergence:
-    model: object
-    dataset: object
+    """Declares convergence once simulated moments track the dataset's moments closely for `patience`
+    consecutive checks (checked every `check_every` steps)."""
+
+    model: Model
+    dataset: Dataset
     n_samples: int = 5000
     iterations: int = 1000
     check_every: int = 50
@@ -41,7 +56,9 @@ class MomentMatchConvergence:
     _below_tol_count: int = field(default=0, init=False, repr=False)
     _step: int = field(default=0, init=False, repr=False)
 
-    def check(self, grad, h, J) -> bool:
+    def check(self, grad: Gradient, h: Array, J: Array) -> bool:
+        """Every `check_every` steps, simulate at (h, J) and compare moments to the dataset; return True
+        once matches have held for `patience` consecutive checks."""
         self._step += 1
         if self._step % self.check_every != 0:
             return False
@@ -58,7 +75,9 @@ class MomentMatchConvergence:
             self._below_tol_count = 0
         return self._below_tol_count >= self.patience
 
-    def _matches(self, real, sim) -> bool:
+    def _matches(self, real: Array, sim: Array) -> bool:
+        """Check whether `sim` tracks `real`: correlated above `pcc_tol`, slope within `slope_tol` of 1,
+        and intercept within `intercept_tol` (scaled by mean |real|) of 0."""
         xp = self.model.array_backend.xp
 
         real_flat, sim_flat = real.ravel(), sim.ravel()
