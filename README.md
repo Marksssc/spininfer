@@ -168,5 +168,3 @@ A couple of tests (`test_backend_consistency.py` under `tests/ising/PLE` and `te
 ## Roadmap
 - **Mathematical documentation:** A dedicated section deriving the likelihood, pseudo-likelihood, and gradients for both models.
 - **PyTorch backend:** Expanding backend support to include `torch`.
-- **Docstrings:** The code will be made more readable with the addition of docstrings.
-- **jnp.polyfit:** Might not work always, will be fixed and tested soon.
