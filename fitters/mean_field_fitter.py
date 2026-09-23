@@ -4,7 +4,7 @@ from typing import Any
 
 from convergence.criteria import FitResult
 from models.ising import IsingModel
-from mean_field.ising import independent_pair_mean_field, naive_mean_field, tap_mean_field
+from mean_field.ising import naive_mean_field
 
 Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
 Dataset = Any  # data.dataset.Dataset
