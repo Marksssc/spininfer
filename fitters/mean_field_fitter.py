@@ -4,7 +4,7 @@ from typing import Any
 
 from convergence.criteria import FitResult
 from models.ising import IsingModel
-from mean_field.ising import naive_mean_field
+from mean_field.ising import naive_mean_field, TAP_mean_field
 
 Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
 Dataset = Any  # data.dataset.Dataset
@@ -23,3 +23,15 @@ class NaiveMeanFieldFitter:
         h, J = naive_mean_field(self.model, moments.mean_s, moments.mean_ss)
         return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))
 
+@dataclass
+class TAPMeanFieldFitter:
+    """Fits (h, J) by the TAP method, closed form."""
+
+    model: IsingModel
+    dataset: Dataset
+
+    def fit(self) -> FitResult:
+        """Get the parameters with the TAP method."""
+        moments = self.dataset.moments
+        h, J = TAP_mean_field(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
+        return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))
