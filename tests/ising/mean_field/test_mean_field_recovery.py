@@ -3,7 +3,7 @@ import pytest
 from models.ising import IsingModel
 from data.generate import generate_data
 from data.dataset import Dataset
-from fitters.mean_field_fitter import NaiveMeanFieldFitter, TAPMeanFieldFitter
+from fitters.mean_field_fitter import NaiveMeanFieldFitter, TAPMeanFieldFitter, IndependentPairFitter, SessakMonassonFitter
 
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, h_max_err, J_max_err", [
@@ -40,6 +40,40 @@ def test_tap_recovery():
     dataset = Dataset(samples=truth.samples, model=model)
 
     result = TAPMeanFieldFitter(model=model, dataset=dataset).fit()
+
+    assert np.abs(result.h - truth.h).mean() < 0.05
+    assert np.abs(result.J - truth.J).mean() < 0.03
+    assert result.converged is True
+    assert result.n_steps == 1
+
+
+def test_independent_pair_recovery():
+    """IndependentPairFitter should recover weak-coupling ground truth from MCMC-sampled data
+    in one closed-form step."""
+    model = IsingModel(n_sites=10, backend="numba")
+    truth = generate_data(model, n_samples=20_000, iterations=2000, seed=1,
+                           loc_h=0.0, scale_h=0.3, loc_J=0.0,
+                           scale_J=0.5 / np.sqrt(model.n_sites))
+    dataset = Dataset(samples=truth.samples, model=model)
+
+    result = IndependentPairFitter(model=model, dataset=dataset).fit()
+
+    assert np.abs(result.h - truth.h).mean() < 0.05
+    assert np.abs(result.J - truth.J).mean() < 0.03
+    assert result.converged is True
+    assert result.n_steps == 1
+
+
+def test_sessak_monasson_recovery():
+    """SessakMonassonFitter should recover weak-coupling ground truth from MCMC-sampled data
+    in one closed-form step."""
+    model = IsingModel(n_sites=10, backend="numba")
+    truth = generate_data(model, n_samples=20_000, iterations=2000, seed=1,
+                           loc_h=0.0, scale_h=0.3, loc_J=0.0,
+                           scale_J=0.5 / np.sqrt(model.n_sites))
+    dataset = Dataset(samples=truth.samples, model=model)
+
+    result = SessakMonassonFitter(model=model, dataset=dataset).fit()
 
     assert np.abs(result.h - truth.h).mean() < 0.05
     assert np.abs(result.J - truth.J).mean() < 0.03

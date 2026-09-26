@@ -4,7 +4,7 @@ from typing import Any
 
 from convergence.criteria import FitResult
 from models.ising import IsingModel
-from mean_field.ising import naive_mean_field, TAP_mean_field
+from mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation
 
 Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
 Dataset = Any  # data.dataset.Dataset
@@ -34,4 +34,30 @@ class TAPMeanFieldFitter:
         """Get the parameters with the TAP method."""
         moments = self.dataset.moments
         h, J = TAP_mean_field(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
+        return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))
+
+@dataclass
+class IndependentPairFitter:
+    """Fits (h, J) by the independent pair approximation and returns the resulting (h, J)."""
+
+    model: IsingModel
+    dataset: Dataset
+
+    def fit(self) -> FitResult:
+        """Get the parameteres with the independent pair approximation."""
+        moments = self.dataset.moments
+        h, J = independent_pair_approximation(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
+        return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))
+
+@dataclass
+class SessakMonassonFitter:
+    """Fits (h, J) by the Sessak-Monasson approximation and returns the resulting (h, J)"""
+
+    model: IsingModel
+    dataset: Dataset
+
+    def fit(self) -> FitResult:
+        """Get the parameteres with the Sessak-Monasson approximation."""
+        moments = self.dataset.moments
+        h, J = sessak_monasson_approximation(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
         return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))

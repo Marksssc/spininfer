@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from models.ising import IsingModel
-from mean_field.ising import naive_mean_field, TAP_mean_field
+from mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation
 
 
 @pytest.mark.parametrize("scale_h, scale_J, max_err", [
@@ -121,3 +121,140 @@ def test_tap_satisfies_its_own_self_consistency_equation():
     m_tap = np.tanh(h + J @ m - onsager)
 
     assert np.allclose(m_tap, m, atol=1e-6)
+
+
+def test_ipa_independent_spins_gives_zero_coupling_and_single_site_field():
+    """With C_ij = 0 for i != j the pair corrections vanish: J = 0 and h = atanh(m)."""
+    model = IsingModel(n_sites=6, backend="numpy")
+    m = np.array([0.3, -0.5, 0.0, 0.7, -0.1, 0.2])
+    mean_ss = np.outer(m, m)
+    np.fill_diagonal(mean_ss, 1.0)
+
+    h, J = independent_pair_approximation(model, m, mean_ss)
+
+    assert np.allclose(J, 0.0, atol=1e-10)
+    assert np.allclose(h, np.arctanh(m), atol=1e-10)
+
+
+def test_ipa_is_exact_for_two_sites():
+    """For N = 2 the pair inversion is the full inversion, so (h, J) are recovered exactly."""
+    model = IsingModel(n_sites=2, backend="numpy")
+    h_true, J_true = model.random_params(loc_h=0.0, scale_h=0.5, loc_J=0.0, scale_J=1.0, seed=4)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    h, J = independent_pair_approximation(model, mean_s, mean_ss)
+
+    assert np.allclose(h, h_true, atol=1e-8)
+    assert np.allclose(J, J_true, atol=1e-8)
+
+
+@pytest.mark.parametrize("scale_h, scale_J, max_err", [
+    pytest.param(0.5, 0.05, 0.01, id="weak_coupling"),
+    pytest.param(0.5, 1.0, 0.15, id="moderate_coupling"),
+])
+def test_ipa_matches_exact_moments(scale_h, scale_J, max_err):
+    model = IsingModel(n_sites=10, backend="numpy")
+    h_true, J_true = model.random_params(loc_h=0.0, scale_h=scale_h, loc_J=0.0,
+                                          scale_J=scale_J / np.sqrt(model.n_sites), seed=1)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    h, J = independent_pair_approximation(model, mean_s, mean_ss)
+
+    assert np.all(np.isfinite(h)) and np.all(np.isfinite(J))
+    assert np.abs(h - h_true).mean() < max_err
+    assert np.abs(J - J_true).mean() < max_err
+
+
+def test_ipa_J_has_zero_diagonal_and_is_symmetric():
+    model = IsingModel(n_sites=8, backend="numpy")
+    h_true, J_true = model.random_params(seed=3)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    _, J = independent_pair_approximation(model, mean_s, mean_ss)
+
+    assert np.allclose(np.diag(J), 0.0)
+    assert np.allclose(J, J.T)
+
+
+def test_ipa_stays_finite_when_a_pair_state_is_never_observed():
+    """A never-seen pair state makes the true coupling diverge; the clamp must keep it finite."""
+    model = IsingModel(n_sites=3, backend="numpy")
+    m = np.array([0.0, 0.0, 0.0])
+    mean_ss = np.array([[1.0, 1.0, 0.0],
+                        [1.0, 1.0, 0.0],
+                        [0.0, 0.0, 1.0]])
+
+    h, J = independent_pair_approximation(model, m, mean_ss)
+
+    assert np.all(np.isfinite(h)) and np.all(np.isfinite(J))
+    assert J[0, 1] > 1.0
+
+
+@pytest.mark.parametrize("scale_h, scale_J, max_err", [
+    pytest.param(0.5, 0.05, 0.01, id="weak_coupling"),
+    pytest.param(0.5, 1.0, 0.1, id="moderate_coupling"),
+])
+def test_sessak_monasson_matches_exact_moments(scale_h, scale_J, max_err):
+    model = IsingModel(n_sites=10, backend="numpy")
+    h_true, J_true = model.random_params(loc_h=0.0, scale_h=scale_h, loc_J=0.0,
+                                          scale_J=scale_J / np.sqrt(model.n_sites), seed=1)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    h, J = sessak_monasson_approximation(model, mean_s, mean_ss)
+
+    assert np.all(np.isfinite(h)) and np.all(np.isfinite(J))
+    assert np.abs(h - h_true).mean() < max_err
+    assert np.abs(J - J_true).mean() < max_err
+
+
+@pytest.mark.parametrize("seed", [1, 2, 3])
+def test_sessak_monasson_J_beats_naive_and_ipa_at_moderate_coupling(seed):
+    """The second-order corrections should make J more accurate than nMF or IPA alone."""
+    model = IsingModel(n_sites=10, backend="numpy")
+    h_true, J_true = model.random_params(loc_h=0.0, scale_h=0.5, loc_J=0.0,
+                                          scale_J=1.0 / np.sqrt(model.n_sites), seed=seed)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    _, J_sm = sessak_monasson_approximation(model, mean_s, mean_ss)
+    _, J_n = naive_mean_field(model, mean_s, mean_ss)
+    _, J_ipa = independent_pair_approximation(model, mean_s, mean_ss)
+
+    err_sm = np.abs(J_sm - J_true).mean()
+    assert err_sm < np.abs(J_n - J_true).mean()
+    assert err_sm < np.abs(J_ipa - J_true).mean()
+
+
+def test_sessak_monasson_J_has_zero_diagonal_and_is_symmetric():
+    model = IsingModel(n_sites=8, backend="numpy")
+    h_true, J_true = model.random_params(seed=3)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    _, J = sessak_monasson_approximation(model, mean_s, mean_ss)
+
+    assert np.allclose(np.diag(J), 0.0)
+    assert np.allclose(J, J.T)
+
+
+def test_sessak_monasson_independent_spins_gives_zero_coupling():
+    """With C_ij = 0 for i != j, all coupling terms vanish and h = atanh(m)."""
+    model = IsingModel(n_sites=6, backend="numpy")
+    m = np.array([0.3, -0.5, 0.1, 0.7, -0.1, 0.2])
+    mean_ss = np.outer(m, m)
+    np.fill_diagonal(mean_ss, 1.0)
+
+    h, J = sessak_monasson_approximation(model, m, mean_ss)
+
+    assert np.allclose(J, 0.0, atol=1e-10)
+    assert np.allclose(h, np.arctanh(m), atol=1e-10)
+
+
+def test_sessak_monasson_no_warnings_on_diagonal():
+    """The diagonal denominator is masked, so no divide-by-zero warnings should be raised."""
+    import warnings
+    model = IsingModel(n_sites=8, backend="numpy")
+    h_true, J_true = model.random_params(seed=3)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        sessak_monasson_approximation(model, mean_s, mean_ss)
