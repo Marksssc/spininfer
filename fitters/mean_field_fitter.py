@@ -69,7 +69,7 @@ class BetheFitter:
     dataset: Dataset
 
     def fit(self) -> FitResult:
-        """Get the parameteres with the Sessak-Monasson approximation."""
+        """Get the parameteres with the Bethe approximation."""
         moments = self.dataset.moments
         h, J = bethe_approximation(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
         return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))

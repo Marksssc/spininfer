@@ -22,7 +22,7 @@ dependencies = [
 
 [project.optional-dependencies]
 gpu = ["cupy>=12.0"]
-jax = ["jax>=0.4", "jaxlib>=0.4"]
+jax = ["jax>=0.4", "jaxlib>=0.4", "optax>=0.2.8"]
 plots = ["matplotlib>=3.7"]
 msa = ["biopython>=1.81"]
 dev = ["pytest>=7.0"]
