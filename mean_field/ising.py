@@ -108,7 +108,16 @@ def sessak_monasson_approximation(model: IsingModel, mean_s: Array, mean_ss: Arr
     h, J = model.apply_gauge(h, J)
     return h, J
 
-
+def bethe_approximation(model: IsingModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
+    xp = model.array_backend.xp
+    m = mean_s
+    C = _get_covariance(model, m, mean_ss)
+    C_inv = xp.linalg.solve(C, xp.eye(model.n_sites))
+    x = xp.where(xp.eye(model.n_sites, dtype=bool), 0.0, C_inv)
+    a = (1.0 - m**2)[:, None] * (1.0 - m**2)[None, :]
+    C_tilde = -2.0 * x * a / (1.0 + xp.sqrt(1.0 + 4.0 * x**2 * a))
+    mean_ss_bethe = xp.outer(m, m) + C_tilde
+    return independent_pair_approximation(model, m, mean_ss_bethe)
 
 
 

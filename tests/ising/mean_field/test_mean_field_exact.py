@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from models.ising import IsingModel
-from mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation
+from mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation, bethe_approximation
 
 
 @pytest.mark.parametrize("scale_h, scale_J, max_err", [
@@ -258,3 +258,100 @@ def test_sessak_monasson_no_warnings_on_diagonal():
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         sessak_monasson_approximation(model, mean_s, mean_ss)
+
+
+def _chain_params(n_sites, coupling, fields):
+    """Nearest-neighbour chain: a tree, so the Bethe approximation is exact on it."""
+    J = np.zeros((n_sites, n_sites))
+    for i in range(n_sites - 1):
+        J[i, i + 1] = J[i + 1, i] = coupling
+    return np.asarray(fields, dtype=float), J
+
+
+@pytest.mark.parametrize("coupling", [0.3, 0.8, 1.5])
+def test_bethe_is_exact_on_a_tree(coupling):
+    """On a chain with exact moments Bethe recovers (h, J) exactly, including zero couplings
+    between non-neighbours, even at strong coupling where the other methods fail."""
+    model = IsingModel(n_sites=8, backend="numpy")
+    h_true, J_true = _chain_params(8, coupling, np.linspace(-0.6, 0.6, 8))
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    h, J = bethe_approximation(model, mean_s, mean_ss)
+
+    assert np.allclose(J, J_true, atol=1e-6)
+    assert np.allclose(h, h_true, atol=1e-6)
+
+
+def test_bethe_beats_other_methods_on_a_strongly_coupled_tree():
+    model = IsingModel(n_sites=8, backend="numpy")
+    h_true, J_true = _chain_params(8, 1.0, np.linspace(-0.6, 0.6, 8))
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    err_bethe = np.abs(bethe_approximation(model, mean_s, mean_ss)[1] - J_true).mean()
+    for method in (naive_mean_field, TAP_mean_field, independent_pair_approximation,
+                   sessak_monasson_approximation):
+        err = np.abs(method(model, mean_s, mean_ss)[1] - J_true).mean()
+        assert err_bethe < err, f"{method.__name__} error {err} not above Bethe {err_bethe}"
+
+
+def test_bethe_is_exact_for_two_sites():
+    model = IsingModel(n_sites=2, backend="numpy")
+    h_true, J_true = model.random_params(loc_h=0.0, scale_h=0.5, loc_J=0.0, scale_J=1.0, seed=4)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    h, J = bethe_approximation(model, mean_s, mean_ss)
+
+    assert np.allclose(h, h_true, atol=1e-8)
+    assert np.allclose(J, J_true, atol=1e-8)
+
+
+@pytest.mark.parametrize("scale_h, scale_J, max_err", [
+    pytest.param(0.5, 0.05, 0.01, id="weak_coupling"),
+    pytest.param(0.5, 1.0, 0.15, id="moderate_coupling"),
+])
+def test_bethe_matches_exact_moments_on_dense_model(scale_h, scale_J, max_err):
+    model = IsingModel(n_sites=10, backend="numpy")
+    h_true, J_true = model.random_params(loc_h=0.0, scale_h=scale_h, loc_J=0.0,
+                                          scale_J=scale_J / np.sqrt(model.n_sites), seed=1)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    h, J = bethe_approximation(model, mean_s, mean_ss)
+
+    assert np.all(np.isfinite(h)) and np.all(np.isfinite(J))
+    assert np.abs(h - h_true).mean() < max_err
+    assert np.abs(J - J_true).mean() < max_err
+
+
+def test_bethe_reduces_to_naive_mean_field_for_small_correlations():
+    """For tiny couplings, C_tilde ~ -x*a, so J ~ -(C^-1)_ij, the nMF result."""
+    model = IsingModel(n_sites=8, backend="numpy")
+    h_true, J_true = model.random_params(loc_h=0.0, scale_h=0.3, loc_J=0.0, scale_J=0.002, seed=2)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    _, J_bethe = bethe_approximation(model, mean_s, mean_ss)
+    _, J_nmf = naive_mean_field(model, mean_s, mean_ss)
+
+    assert np.allclose(J_bethe, J_nmf, atol=1e-4)
+
+
+def test_bethe_J_has_zero_diagonal_and_is_symmetric():
+    model = IsingModel(n_sites=8, backend="numpy")
+    h_true, J_true = model.random_params(seed=3)
+    mean_s, mean_ss = model.exact_statistics(h_true, J_true)
+
+    _, J = bethe_approximation(model, mean_s, mean_ss)
+
+    assert np.allclose(np.diag(J), 0.0)
+    assert np.allclose(J, J.T)
+
+
+def test_bethe_independent_spins_gives_zero_coupling():
+    model = IsingModel(n_sites=6, backend="numpy")
+    m = np.array([0.3, -0.5, 0.1, 0.7, -0.1, 0.2])
+    mean_ss = np.outer(m, m)
+    np.fill_diagonal(mean_ss, 1.0)
+
+    h, J = bethe_approximation(model, m, mean_ss)
+
+    assert np.allclose(J, 0.0, atol=1e-10)
+    assert np.allclose(h, np.arctanh(m), atol=1e-10)

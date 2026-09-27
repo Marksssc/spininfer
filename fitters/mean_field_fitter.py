@@ -4,7 +4,7 @@ from typing import Any
 
 from convergence.criteria import FitResult
 from models.ising import IsingModel
-from mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation
+from mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation, bethe_approximation
 
 Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
 Dataset = Any  # data.dataset.Dataset
@@ -60,4 +60,16 @@ class SessakMonassonFitter:
         """Get the parameteres with the Sessak-Monasson approximation."""
         moments = self.dataset.moments
         h, J = sessak_monasson_approximation(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
+        return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))
+
+@dataclass
+class BetheFitter:
+    """Fits (h, J) by the Bethe approximation and returns the resulting (h, J)"""
+    model: IsingModel
+    dataset: Dataset
+
+    def fit(self) -> FitResult:
+        """Get the parameteres with the Sessak-Monasson approximation."""
+        moments = self.dataset.moments
+        h, J = bethe_approximation(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
         return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))
