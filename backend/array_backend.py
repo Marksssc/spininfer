@@ -18,6 +18,9 @@ class ArrayBackend(Protocol):
     def get_kernel_kwargs(self, seed: int) -> dict:
         """Build the extra kwargs this backend's simulation kernels need to be seeded."""
         ...
+    def is_traced(self, x: Array) -> bool:
+        """True if `x` is a placeholder inside jax tracing (jit/vmap), whose values are not known yet."""
+        ...
 
 @dataclass
 class NumpyBackend:
@@ -37,6 +40,10 @@ class NumpyBackend:
     def get_kernel_kwargs(self, seed: int) -> dict:
         """Return {"seed": seed}, as expected by the numpy/numba simulation kernels."""
         return {"seed": seed}
+
+    def is_traced(self, x: Array) -> bool:
+        """Always False: numpy arrays always hold values."""
+        return False
 
 @dataclass
 class CupyBackend:
@@ -59,6 +66,10 @@ class CupyBackend:
         """Return {"seed": seed}, as expected by the cupy simulation kernels."""
         return {"seed": seed}
 
+    def is_traced(self, x: Array) -> bool:
+        """Always False: cupy arrays always hold values."""
+        return False
+
 @dataclass
 class JaxBackend:
     """Array backend using jax."""
@@ -80,6 +91,11 @@ class JaxBackend:
         """Return {"key": <jax PRNGKey>}, as expected by the jax simulation kernels."""
         import jax
         return {"key": jax.random.PRNGKey(seed)}
+
+    def is_traced(self, x: Array) -> bool:
+        """True inside jit/vmap tracing, where value-dependent checks cannot run."""
+        import jax
+        return isinstance(x, jax.core.Tracer)
 
 _BACKENDS = {
     "numpy": NumpyBackend,

@@ -74,5 +74,5 @@ def test_lbfgs_rejects_objective_without_value():
     objective = MomentMatchingObjective(estimator=McmcEstimator(n_samples=500))
     fitter = LbfgsFitter(model=model, dataset=dataset, objective=objective, maxiter=5)
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(NotImplementedError):
         fitter.fit(h, J)

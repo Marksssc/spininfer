@@ -23,6 +23,10 @@ class RegularizedObjective:
         reg_grad_h, reg_grad_J = self.regularizer.gradient(h, J, model)
         return Gradient(grad_h=grad.grad_h - reg_grad_h, grad_J=grad.grad_J - reg_grad_J)
 
+    def compute_value(self, model: Model, h: Array, J: Array, dataset: Dataset) -> float:
+        """Return the wrapped objective's value minus the regularizer's penalty."""
+        return self.objective.compute_value(model, h, J, dataset) - self.regularizer.penalty(h, J, model)
+
     def compute_value_and_gradient(self, model: Model, h: Array, J: Array, dataset: Dataset) -> tuple[float, Gradient]:
         """Return (value, gradient), both with the regularizer's penalty/gradient subtracted."""
         value, grad = self.objective.compute_value_and_gradient(model, h, J, dataset)

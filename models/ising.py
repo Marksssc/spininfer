@@ -55,7 +55,7 @@ class IsingModel:
             raise ValueError(f"h has shape {h.shape}, expected ({self.n_sites},)")
         if J.shape != (self.n_sites, self.n_sites):
             raise ValueError(f"J has shape {J.shape}, expected ({self.n_sites}, {self.n_sites})")
-        if not self.array_backend.xp.allclose(J, J.T):
+        if not self.array_backend.is_traced(J) and not self.array_backend.xp.allclose(J, J.T):
             raise ValueError(f"The coupling matrix is not symmetric")
 
     def simulate(self, h: Array, J: Array, samples: int, iterations=1000, seed=0) -> Array:

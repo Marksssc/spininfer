@@ -25,6 +25,8 @@ class PlePottsObjective:
 
     def compute_value_and_gradient(self, model: Model, h: Array, J: Array, dataset: Dataset) -> tuple[float, Gradient]:
         """Return (pseudolikelihood value, gradient) at (h, J) on `dataset.samples`."""
+        if dataset.samples is None:
+            raise ValueError("PLE needs samples, but this dataset only has moments")
         moments = dataset.moments
         data = dataset.samples
         value, grad_h, grad_J = _BACKENDS[model.backend](h, J, data, moments.mean_s, moments.mean_ss)

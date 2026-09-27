@@ -61,7 +61,7 @@ class PottsModel:
                 f"J has shape {J.shape}, expected "
                 f"{(self.n_sites, self.n_sites, self.n_states, self.n_states)}"
             )
-        if not self.array_backend.xp.allclose(J, J.transpose(1, 0, 3, 2)):
+        if not self.array_backend.is_traced(J) and not self.array_backend.xp.allclose(J, J.transpose(1, 0, 3, 2)):
             raise ValueError(f"The coupling matrix is not symmetric")
 
     def simulate(self, h: Array, J: Array, samples: int, iterations: int = 1000, seed: int = 0) -> Array:
