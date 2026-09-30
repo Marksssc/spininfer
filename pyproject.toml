@@ -28,5 +28,5 @@ msa = ["biopython>=1.81"]
 dev = ["pytest>=7.0"]
 
 [tool.setuptools.packages.find]
-include = ["backend*", "convergence*", "models*", "data*", "optimizers*", "objectives*", "fitters*", "stats*", "mean_field*"]
+include = ["backend*", "convergence*", "models*", "data*", "optimizers*", "objectives*", "fitters*", "stats*", "mean_field*", "cluster_expansion*"]
 exclude = ["tests*"]
