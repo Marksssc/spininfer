@@ -84,7 +84,7 @@ class LbfgsFitter:
             "method": "L-BFGS-B",
             "tol": self.tol,
             "callback": callback,
-            "options": {"maxiter": self.maxiter},
+            "options": {"maxiter": self.maxiter, "gtol": self.tol, "ftol": 1e-15},
             **self.scipy_kwargs,
         }
         try:
