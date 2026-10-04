@@ -32,9 +32,9 @@ J is symmetric with zero diagonal (blocks). Papers often write the pair sum as �
 | Naive mean field | `mean_field/ising.py`, `mean_field/potts.py` | closed form | weak coupling only | `Naive_mean_field_approximations.pdf` | Roudi 2009 |
 | TAP | `mean_field/ising.py` | closed form | weak coupling only | — | Thouless 1977; Roudi 2009 |
 | Independent pair | `mean_field/ising.py`, `mean_field/potts.py` | closed form | sparse / tree-like | — | Roudi 2009 |
-| Sessak–Monasson | `mean_field/ising.py` | closed form | small correlations | — | |
+| Sessak–Monasson | `mean_field/ising.py`, `mean_field/potts.py` | closed form | small correlations | — | Sessak & Monasson 2009 |
 | Bethe | `mean_field/ising.py` | closed form | tree-like | — |  |
-| Adaptive cluster expansion (Ising) | `cluster_expansion/`, `fitters/ACE_fitter.py` | medium | yes as threshold → 0 | — |  |
+| Adaptive cluster expansion | `cluster_expansion/`, `fitters/ACE_fitter.py` | medium | yes as threshold → 0 | Cocco & Monasson 2011 |  |
 
 ## Short description
 ### Maximum likelihood
@@ -138,6 +138,50 @@ h_{i}(a) = \ln{\frac{P_{i}(a)}{P_{i}(q)}} + \sum_{j \neq i} \left( h^{(ij)}_i(a)
 Finally, the parameters are put into the correct gauge as outlined in the top of the document.
 
 ### Sessak Monasson
+The Sessak Monasson approximation to the Ising model has the form,
+
+```math
+J_{ij} = -C^{-1}_{ij} + J_{ij}^{IP} - \frac{C_{ij}}{(1-m_i^2)(1-m_j^2) - C_{ij}^2}, 
+```
+
+where the field parameters are determined through the TAP equation. For a detailed derivation I refer to Sessak & Monasson (2009) and Roudi et al. (2009).
+
+For the Potts model, we take the same approach where the coupling parameter is determined as follows, where the reference state is left out:
+
+```math
+J = J^{nMF} + J^{IPA} - J^{nMF pair}.
+```
+
+Now, the naive mean field inversion per pair can be derived as follows:
+
+$$
+\begin{pmatrix}
+\mathbf{C}_{ii} & \mathbf{C}_{ij} \\
+\mathbf{C}_{ji} & \mathbf{C}_{jj}
+\end{pmatrix}
+\begin{pmatrix}
+\mathbf{M}_{11} & \mathbf{M}_{12} \\
+\mathbf{M}_{21} & \mathbf{M}_{22}
+\end{pmatrix}
+=
+\begin{pmatrix}
+I & 0 \\
+0 & I
+\end{pmatrix},
+$$
+
+where $M_{12}$ can be isolated yielding:
+
+```math
+J_{ij} = -M_{12} = C_{ii}^{-1} C_{ij}(-C_{ji}C_{ii}^{-1}C_{ij} + C_{jj})^{-1}.
+```
+
+Now the field parameters are recovered using the naive mean field self consistent equations, followed by the same form:
+
+```math
+h^{sm} = h^{nMF} + h^{IPA} - h^{nMF pair}.
+```
+
 ### Bethe
 ### Adaptive cluster expansion
 
@@ -153,3 +197,4 @@ Finally, the parameters are put into the correct gauge as outlined in the top of
 - Ekeberg, M., Lövkvist, C., Lan, Y., Weigt, M., & Aurell, E. (2013). Improved contact prediction in proteins: using pseudolikelihoods to infer Potts models. Physical Review E—Statistical, Nonlinear, and Soft Matter Physics, 87(1), 012707.
 - Cocco, S., & Monasson, R. (2011). Adaptive cluster expansion for inferring Boltzmann machines with noisy data. Physical review letters, 106(9), 090601.
 - Schneidman, E., Berry, M. J., Segev, R., & Bialek, W. (2006). Weak pairwise correlations imply strongly correlated network states in a neural population. Nature, 440(7087), 1007-1012.
+- Sessak, V., & Monasson, R. (2009). Small-correlation expansions for the inverse Ising problem. Journal of Physics A: Mathematical and Theoretical, 42(5), 055001.

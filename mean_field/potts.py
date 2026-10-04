@@ -63,7 +63,31 @@ def TAP_mean_field(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Ar
     raise NotImplementedError("This method is not yet currently implemented for the Potts model")
 
 def sessak_monasson_approximation(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
-    raise NotImplementedError("This method is not yet currently implemented for the Potts model")
+    xp = model.array_backend.xp
+    n, q = mean_s.shape
+
+    h_nmf, J_nmf = naive_mean_field(model=model, mean_s=mean_s, mean_ss=mean_ss)
+    h_IPA, J_IPA = independent_pair_approximation(model=model, mean_s=mean_s, mean_ss=mean_ss)
+
+    C_per_pair = mean_ss - mean_s[:, None, :, None] * mean_s[None, :, None, :] 
+    X = C_per_pair[:, :, :-1, :-1] / mean_s[:, None, :-1, None] - C_per_pair[:, :, -1:, :-1] / mean_s[:, None, -1:, None]
+    L = xp.eye(q - 1) * mean_s[:, :-1, None] - mean_s[:, :-1, None] * mean_s[:, None, :-1]
+    S = L[None, :, :, :] - xp.einsum('ijca,ijcb->ijab', C_per_pair[:, :, :-1, :-1], X)
+
+    # Here I make sure that the matrix can be inverted
+    diag = xp.eye(n, dtype=bool)[:, :, None, None]
+    S = xp.where(diag, xp.eye(q - 1), S)
+
+    J = xp.swapaxes(xp.linalg.solve(S, xp.swapaxes(X, -1, -2)), -1, -2)
+    J_zeroed = xp.where(diag, 0.0, J)
+    J_pair = xp.pad(J_zeroed, ((0, 0), (0, 0), (0, 1), (0, 1)))
+
+    log_p = xp.log(xp.clip(mean_s, _P_EPS, None))
+    h_pair = log_p - log_p[:, -1:] - xp.einsum('ijab,jb->ia', J_pair, mean_s)
+
+    h_pair, J_pair = model.apply_gauge(h_pair, J_pair)
+
+    return h_nmf + h_IPA - h_pair, J_nmf + J_IPA - J_pair
 
 def bethe_approximation(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
     raise NotImplementedError("This method is not yet currently implemented for the Potts model")
