@@ -30,10 +30,10 @@ J is symmetric with zero diagonal (blocks). Papers often write the pair sum as �
 | Maximum likelihood (moment matching) | `objectives/moment_matching.py` with `fitters/` | slow | yes (with exact statistics) | `Maximum_Likelihood.pdf` |  |
 | Pseudo-likelihood | `objectives/PLE_ising.py`, `objectives/PLE_potts.py` | fast | consistent for many samples | `Pseudo_Likelihood.pdf` |  |
 | Naive mean field | `mean_field/ising.py`, `mean_field/potts.py` | closed form | weak coupling only | `Naive_mean_field_approximations.pdf` | Roudi 2009 |
-| TAP | `mean_field/ising.py` | closed form | weak coupling only | — | Thouless 1977; Roudi 2009 |
+| TAP | `mean_field/ising.py` (Ising only) | closed form | weak coupling only | — | Thouless 1977; Roudi 2009 |
 | Independent pair | `mean_field/ising.py`, `mean_field/potts.py` | closed form | sparse / tree-like | — | Roudi 2009 |
 | Sessak–Monasson | `mean_field/ising.py`, `mean_field/potts.py` | closed form | small correlations | — | Sessak & Monasson 2009 |
-| Bethe | `mean_field/ising.py` | closed form | tree-like | — |  |
+| Bethe | `mean_field/ising.py` (Ising only) | closed form | tree-like | — | Nguyen & Berg (2012); Ricci-Tersenghi (2012) |
 | Adaptive cluster expansion | `cluster_expansion/`, `fitters/ACE_fitter.py` | medium | yes as threshold → 0 | Cocco & Monasson 2011 |  |
 
 ## Short description
@@ -183,6 +183,14 @@ h^{sm} = h^{nMF} + h^{IPA} - h^{nMF pair}.
 ```
 
 ### Bethe
+In the Bethe approximation, the interactions are assumed to be tree-like. In this case I follow the method by Nguyen & Berg (2012), where the corrected correlation matrix is described by:
+
+```math
+C^{-1}_{ij} = \frac{\tilde{C}_{ij}}{(\tilde{C}_{ij})^2 - (1- \langle \sigma_i \rangle^2)(1- \langle \sigma_j \rangle^2)}.
+```
+
+Here $\tilde{C}$ can be isolated and used in the independent pair approximation described above. For a more detailed description I refer to Nguyen & Berg (2012) and Ricci-Tersenghi (2012).
+
 ### Adaptive cluster expansion
 
 
@@ -198,3 +206,5 @@ h^{sm} = h^{nMF} + h^{IPA} - h^{nMF pair}.
 - Cocco, S., & Monasson, R. (2011). Adaptive cluster expansion for inferring Boltzmann machines with noisy data. Physical review letters, 106(9), 090601.
 - Schneidman, E., Berry, M. J., Segev, R., & Bialek, W. (2006). Weak pairwise correlations imply strongly correlated network states in a neural population. Nature, 440(7087), 1007-1012.
 - Sessak, V., & Monasson, R. (2009). Small-correlation expansions for the inverse Ising problem. Journal of Physics A: Mathematical and Theoretical, 42(5), 055001.
+- Nguyen, H. C., & Berg, J. (2012). Bethe–Peierls approximation and the inverse Ising problem. Journal of Statistical Mechanics: Theory and Experiment, 2012(03), P03004.
+- Ricci-Tersenghi, F. (2012). The Bethe approximation for solving the inverse Ising problem: a comparison with other inference methods. Journal of Statistical Mechanics: Theory and Experiment, 2012(08), P08015.
