@@ -36,3 +36,34 @@ def naive_mean_field(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[
     h = log_p - log_p[:, -1:] - xp.einsum('ijab,jb->ia', J, mean_s)
 
     return model.apply_gauge(h, J)
+
+def independent_pair_approximation(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
+    """Independent pair approximation for the Potts model, needs no matrix inversion."""
+
+    xp = model.array_backend.xp
+    off_diag = ~xp.eye(model.n_sites, dtype=bool)
+
+    log_p = xp.log(xp.maximum(mean_ss, _P_EPS))
+    log_p_aq = log_p[:, :, :, -1:]
+    log_p_qb = log_p[:, :, -1:, :]
+    log_p_qq = log_p[:, :, -1:, -1:]
+
+    J = (log_p - log_p_aq - log_p_qb + log_p_qq) * off_diag[:, :, None, None]
+
+    log_m = xp.log(xp.maximum(mean_s, _P_EPS))
+    h_single = log_m - log_m[:, -1:]
+    h_pair = (log_p_aq - log_p_qq)[..., 0]
+
+    h = h_single + xp.sum((h_pair - h_single[:, None, :]) * off_diag[:, :, None], axis=1)
+
+    h, J = model.apply_gauge(h, J)
+    return h, J
+
+def TAP_mean_field(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
+    raise NotImplementedError("This method is not yet currently implemented for the Potts model")
+
+def sessak_monasson_approximation(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
+    raise NotImplementedError("This method is not yet currently implemented for the Potts model")
+
+def bethe_approximation(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
+    raise NotImplementedError("This method is not yet currently implemented for the Potts model")
