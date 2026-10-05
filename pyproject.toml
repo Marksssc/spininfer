@@ -1,9 +1,10 @@
 [project]
 name = "spininfer"
 version = "0.1.0"
-description = "Inverse Ising/Potts model fitting via pseudolikelihood and moment matching, with numpy/numba/cupy/jax backends."
+description = "Multi-backend inference of Ising and Potts models: mean-field, adaptive cluster expansion, maximum likelihood and pseudolikelihood, on NumPy, Numba, CuPy and JAX."
 readme = "README.md"
 requires-python = ">=3.10"
+keywords = ["ising", "potts", "inverse problems", "maximum entropy", "statistical physics", "neuroscience", "contact prediction"]
 license = { file = "LICENSE" }
 authors = [
     { name = "Mark Schuttelaars", email = "mark.r.schuttelaars@gmail.com" },
@@ -20,8 +21,13 @@ dependencies = [
     "pandas>=2.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/Marksssc/spininfer"
+Repository = "https://github.com/Marksssc/spininfer"
+Documentation = "https://github.com/Marksssc/spininfer/blob/main/docs/DOCUMENTATION.md"
+Issues = "https://github.com/Marksssc/spininfer/issues"
+
 [project.optional-dependencies]
-gpu = ["cupy>=12.0"]
 jax = ["jax>=0.4", "jaxlib>=0.4", "optax>=0.2.8"]
 plots = ["matplotlib>=3.7"]
 msa = ["biopython>=1.81"]
