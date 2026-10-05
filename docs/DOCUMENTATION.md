@@ -27,14 +27,14 @@ J is symmetric with zero diagonal (blocks). Papers often write the pair sum as �
 
 | Method | Code | Speed | Exact? | Derivation | References |
 |---|---|---|---|---|---|
-| Maximum likelihood (moment matching) | `objectives/moment_matching.py` with `fitters/` | slow | yes (with exact statistics) | `Maximum_Likelihood.pdf` |  |
-| Pseudo-likelihood | `objectives/PLE_ising.py`, `objectives/PLE_potts.py` | fast | consistent for many samples | `Pseudo_Likelihood.pdf` |  |
+| Maximum likelihood (moment matching) | `objectives/moment_matching.py` with `fitters/` | slow | yes (with exact statistics) | `Maximum_Likelihood.pdf` | Schneidman 2006; Nguyen 2017 |
+| Pseudo-likelihood | `objectives/PLE_ising.py`, `objectives/PLE_potts.py` | fast | consistent for many samples | `Pseudo_Likelihood.pdf` | Besag 1974; Ekeberg 2013 |
 | Naive mean field | `mean_field/ising.py`, `mean_field/potts.py` | closed form | weak coupling only | `Naive_mean_field_approximations.pdf` | Roudi 2009 |
 | TAP | `mean_field/ising.py` (Ising only) | closed form | weak coupling only | — | Thouless 1977; Roudi 2009 |
 | Independent pair | `mean_field/ising.py`, `mean_field/potts.py` | closed form | sparse / tree-like | — | Roudi 2009 |
 | Sessak–Monasson | `mean_field/ising.py`, `mean_field/potts.py` | closed form | small correlations | — | Sessak & Monasson 2009 |
 | Bethe | `mean_field/ising.py` (Ising only) | closed form | tree-like | — | Nguyen & Berg (2012); Ricci-Tersenghi (2012) |
-| Adaptive cluster expansion | `cluster_expansion/`, `fitters/ACE_fitter.py` | medium | yes as threshold → 0 | Cocco & Monasson 2011 |  |
+| Adaptive cluster expansion | `cluster_expansion/`, `fitters/ACE_fitter.py` | medium | yes as threshold → 0 | — | Cocco & Monasson 2011; Barton 2016 |
 
 ## Short description
 ### Maximum likelihood
@@ -63,7 +63,7 @@ In the naive mean field approximation, the self-consistent equations for the Isi
 ```
 
 ```math
-\langle \sigma_i(a) \rangle = \frac{e^{h_i(a) + \sum_{j \neq i}\sum_{b=1}^q J_{ij}(ab) \langle \sigma_j(b) \rangle}}{\sum_{c=1}^q e^{h_i(c) + \sum_{i \neq j}\sum_{b=1}^q J_{ij}(cb) \langle \sigma_j(b) \rangle}},
+\langle \sigma_i(a) \rangle = \frac{e^{h_i(a) + \sum_{j \neq i}\sum_{b=1}^q J_{ij}(ab) \langle \sigma_j(b) \rangle}}{\sum_{c=1}^q e^{h_i(c) + \sum_{j \neq i}\sum_{b=1}^q J_{ij}(cb) \langle \sigma_j(b) \rangle}},
 ```
 
 where the coupling parameter $J$ can be recovered through the inversion of the correlation matrix
@@ -141,7 +141,7 @@ Finally, the parameters are put into the correct gauge as outlined in the top of
 The Sessak Monasson approximation to the Ising model has the form,
 
 ```math
-J_{ij} = -C^{-1}_{ij} + J_{ij}^{IP} - \frac{C_{ij}}{(1-m_i^2)(1-m_j^2) - C_{ij}^2}, 
+J_{ij} = -C^{-1}_{ij} + J_{ij}^{IP} - \frac{C_{ij}}{(1-\langle \sigma_i \rangle^2)(1-\langle \sigma_j \rangle^2) - C_{ij}^2}, 
 ```
 
 where the field parameters are determined through the TAP equation. For a detailed derivation I refer to Sessak & Monasson (2009) and Roudi et al. (2009).
@@ -192,7 +192,7 @@ C^{-1}_{ij} = \frac{\tilde{C}_{ij}}{(\tilde{C}_{ij})^2 - (1- \langle \sigma_i \r
 Here $\tilde{C}$ can be isolated and used in the independent pair approximation described above. For a more detailed description I refer to Nguyen & Berg (2012) and Ricci-Tersenghi (2012).
 
 ### Adaptive cluster expansion
-
+In adaptive cluster expansion, the parameters are inferred based on the extra information clusters provide. First, we start out by getting the entropy and inferred parameters for all sites as if they are independent. This is followed by getting the entropy and parameters of all pairs. The pairs that are kept are the ones where the entropy difference between the independent sites and the pairs is bigger than the hyperparameter $\theta$. Then, larger clusters are built by combining the smaller ones we just kept, and the same entropy difference is determined. This is continued until either there are no more clusters or a max size is reached. In this way, the entropy of the system is determined by summing the base independent entropy with all the extra differences in entropy, and the parameters by Möbius summation of the inferred parameters. The entropy is determined through exact enumeration. For a more detailed description I defer to Cocco & Monasson (2011) and Barton et al. (2016).
 
 ## Regularization
 
@@ -208,3 +208,6 @@ Here $\tilde{C}$ can be isolated and used in the independent pair approximation 
 - Sessak, V., & Monasson, R. (2009). Small-correlation expansions for the inverse Ising problem. Journal of Physics A: Mathematical and Theoretical, 42(5), 055001.
 - Nguyen, H. C., & Berg, J. (2012). Bethe–Peierls approximation and the inverse Ising problem. Journal of Statistical Mechanics: Theory and Experiment, 2012(03), P03004.
 - Ricci-Tersenghi, F. (2012). The Bethe approximation for solving the inverse Ising problem: a comparison with other inference methods. Journal of Statistical Mechanics: Theory and Experiment, 2012(08), P08015.
+- Barton, J. P., De Leonardis, E., Coucke, A., & Cocco, S. (2016). ACE: adaptive cluster expansion for maximum entropy graphical model inference. Bioinformatics, 32(20), 3089-3097.
+- Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.
+- Nguyen, H. C., Zecchina, R., & Berg, J. (2017). Inverse statistical problems: from the inverse Ising problem to data science. Advances in physics, 66(3), 197-261.
