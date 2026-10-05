@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from models.potts import PottsModel
-from data.MSA import (AMINO_ACID_DICT, load_convert_MSA_file, potts_dataset_from_msa)
+from spininfer.models.potts import PottsModel
+from spininfer.data.MSA import (AMINO_ACID_DICT, load_convert_MSA_file, potts_dataset_from_msa)
 
 
 FASTA = """\

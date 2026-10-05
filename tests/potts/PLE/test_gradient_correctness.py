@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from objectives import PLE_potts_numpy, PLE_potts_numba
+from spininfer.objectives import PLE_potts_numpy, PLE_potts_numba
 
 
 def _make_problem(rng, sites=6, n_states=3, n_samples=200):

@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from models.potts import PottsModel
-from data.generate import generate_data
-from data.dataset import Dataset
-from objectives.PLE_potts import PlePottsObjective
-from optimizers.adam import Adam
-from fitters.lbfgs_fitter import LbfgsFitter
-from fitters.inverse_fitter import InverseFitter
+from spininfer.models.potts import PottsModel
+from spininfer.data.generate import generate_data
+from spininfer.data.dataset import Dataset
+from spininfer.objectives.PLE_potts import PlePottsObjective
+from spininfer.optimizers.adam import Adam
+from spininfer.fitters.lbfgs_fitter import LbfgsFitter
+from spininfer.fitters.inverse_fitter import InverseFitter
 
 N_SITES = 50
 N_SAMPLES = 20_000

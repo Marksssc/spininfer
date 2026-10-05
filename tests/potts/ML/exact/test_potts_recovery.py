@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
-from models.potts import PottsModel
-from data.generate import generate_data
-from data.dataset import Dataset
-from objectives.moment_matching import MomentMatchingObjective
-from stats.exact_estimator import ExactEstimator
-from optimizers.adam import Adam
-from fitters.inverse_fitter import InverseFitter
-from convergence.criteria import GradientNormConvergence, MomentMatchConvergence
+from spininfer.models.potts import PottsModel
+from spininfer.data.generate import generate_data
+from spininfer.data.dataset import Dataset
+from spininfer.objectives.moment_matching import MomentMatchingObjective
+from spininfer.stats.exact_estimator import ExactEstimator
+from spininfer.optimizers.adam import Adam
+from spininfer.fitters.inverse_fitter import InverseFitter
+from spininfer.convergence.criteria import GradientNormConvergence, MomentMatchConvergence
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, n_states, max_err", [
     pytest.param(0.0, 0.2, 0.0, 0.2, 3, 0.05, id="easy_symmetric_3"),

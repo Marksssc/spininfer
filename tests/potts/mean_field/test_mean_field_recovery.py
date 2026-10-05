@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-from models.potts import PottsModel
-from data.generate import generate_data
-from data.dataset import Dataset
-from fitters.mean_field_fitter import NaiveMeanFieldFitter, TAPMeanFieldFitter, IndependentPairFitter, SessakMonassonFitter, BetheFitter
+from spininfer.models.potts import PottsModel
+from spininfer.data.generate import generate_data
+from spininfer.data.dataset import Dataset
+from spininfer.fitters.mean_field_fitter import NaiveMeanFieldFitter, TAPMeanFieldFitter, IndependentPairFitter, SessakMonassonFitter, BetheFitter
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, h_max_err, J_max_err", [
     pytest.param(0.0, 0.1, 0.0, 0.5, 0.05, 0.03, id="weak_coupling"),

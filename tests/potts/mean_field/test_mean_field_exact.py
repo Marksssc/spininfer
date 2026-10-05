@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
-from models.ising import IsingModel
-from models.potts import PottsModel
-from mean_field.ising import naive_mean_field as ising_naive_mean_field
-from mean_field.ising import independent_pair_approximation as ising_independent_pair_approximation
-from mean_field.ising import sessak_monasson_approximation as ising_sessak_monasson_approximation
-from mean_field.potts import naive_mean_field, independent_pair_approximation, sessak_monasson_approximation
+from spininfer.models.ising import IsingModel
+from spininfer.models.potts import PottsModel
+from spininfer.mean_field.ising import naive_mean_field as ising_naive_mean_field
+from spininfer.mean_field.ising import independent_pair_approximation as ising_independent_pair_approximation
+from spininfer.mean_field.ising import sessak_monasson_approximation as ising_sessak_monasson_approximation
+from spininfer.mean_field.potts import naive_mean_field, independent_pair_approximation, sessak_monasson_approximation
 
 
 def _exact_moments(scale_J, n_sites=4, n_states=3, seed=1):

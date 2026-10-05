@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
-from models.ising import IsingModel
-from mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation, bethe_approximation
+from spininfer.models.ising import IsingModel
+from spininfer.mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation, bethe_approximation
 
 
 @pytest.mark.parametrize("scale_h, scale_J, max_err", [

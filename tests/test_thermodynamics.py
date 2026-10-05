@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from models.ising import IsingModel
-from models.potts import PottsModel
-from stats.exact_thermodynamics_estimator import ExactThermodynamicsEstimator
-from stats.thermodynamics_integration_estimator import ThermodynamicsIntegrationEstimator
+from spininfer.models.ising import IsingModel
+from spininfer.models.potts import PottsModel
+from spininfer.stats.exact_thermodynamics_estimator import ExactThermodynamicsEstimator
+from spininfer.stats.thermodynamics_integration_estimator import ThermodynamicsIntegrationEstimator
 
 
 def test_ising_zero_field_zero_coupling_matches_closed_form():

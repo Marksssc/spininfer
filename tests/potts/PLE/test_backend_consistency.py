@@ -1,7 +1,7 @@
 import numpy as np
 import cupy as cp
-from objectives import PLE_potts_numpy, PLE_potts_numba, PLE_potts_cupy, PLE_potts_jax
-from models.potts import PottsModel
+from spininfer.objectives import PLE_potts_numpy, PLE_potts_numba, PLE_potts_cupy, PLE_potts_jax
+from spininfer.models.potts import PottsModel
 
 def test_consistency():
     rng = np.random.default_rng(0)

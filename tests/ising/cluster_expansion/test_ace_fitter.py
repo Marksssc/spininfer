@@ -1,11 +1,11 @@
 import numpy as np
 
-from models.ising import IsingModel
-from data.dataset import Dataset
-from stats.moments import Moments
-from convergence.criteria import FitResult
-from cluster_expansion._cluster_fit import fit_cluster
-from fitters.ACE_fitter import ACEfitter
+from spininfer.models.ising import IsingModel
+from spininfer.data.dataset import Dataset
+from spininfer.stats.moments import Moments
+from spininfer.convergence.criteria import FitResult
+from spininfer.cluster_expansion._cluster_fit import fit_cluster
+from spininfer.fitters.ACE_fitter import ACEfitter
 
 
 def _exact_dataset(n_sites=5, seed=0):

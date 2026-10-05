@@ -1,18 +1,18 @@
 import numpy as np
 import pytest
-from models.ising import IsingModel
-from models.potts import PottsModel
-from data.generate import generate_data
-from data.dataset import Dataset
-from objectives.PLE_ising import PleIsingObjective
-from objectives.PLE_potts import PlePottsObjective
-from objectives.moment_matching import MomentMatchingObjective
-from stats.mcmc_estimator import McmcEstimator
-from fitters.lbfgs_fitter import LbfgsFitter
+from spininfer.models.ising import IsingModel
+from spininfer.models.potts import PottsModel
+from spininfer.data.generate import generate_data
+from spininfer.data.dataset import Dataset
+from spininfer.objectives.PLE_ising import PleIsingObjective
+from spininfer.objectives.PLE_potts import PlePottsObjective
+from spininfer.objectives.moment_matching import MomentMatchingObjective
+from spininfer.stats.mcmc_estimator import McmcEstimator
+from spininfer.fitters.lbfgs_fitter import LbfgsFitter
 
 
 def test_flatten_unflatten_roundtrip():
-    from fitters.lbfgs_fitter import LbfgsFitter
+    from spininfer.fitters.lbfgs_fitter import LbfgsFitter
     rng = np.random.default_rng(0)
     h = rng.normal(size=8)
     J = rng.normal(size=(8, 8))

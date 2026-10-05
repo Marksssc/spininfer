@@ -1,10 +1,10 @@
 import numpy as np
 
-from models.ising import IsingModel
-from data.dataset import Dataset
-from stats.moments import Moments
-from objectives.regularization import L2Regularizer
-from cluster_expansion._cluster_fit import fit_cluster
+from spininfer.models.ising import IsingModel
+from spininfer.data.dataset import Dataset
+from spininfer.stats.moments import Moments
+from spininfer.objectives.regularization import L2Regularizer
+from spininfer.cluster_expansion._cluster_fit import fit_cluster
 
 
 def _exact_dataset(n_sites=6, seed=0):

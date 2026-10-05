@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from models.ising import IsingModel
-from models.potts import PottsModel
-from data.dataset import Dataset
+from spininfer.models.ising import IsingModel
+from spininfer.models.potts import PottsModel
+from spininfer.data.dataset import Dataset
 
 def test_dataset_rejects_mismatched_site_count():
     model = IsingModel(n_sites=10, backend="numpy")

@@ -162,9 +162,8 @@ pytest
 A couple of tests (`test_backend_consistency.py` under `tests/ising/PLE` and `tests/potts/PLE`) require a CUDA GPU and `cupy` installed, which means they'll fail to collect without one. Everything else runs on CPU. Warning for testing: the full recovery tests (`test_ising_recovery.py`, `test_potts_recovery.py`) run real Metropolis chains and thousands of optimization steps, so the tests can take quite a while to complete.
 
 ## Known Limitations
-- **Memory limits for exact statistics:** Exact enumeration currently has no size guard. Calling `model.exact_statistics(...)` on a large system will result in an out-of-memory error rather than a safe exit. Stick to MCMC for larger systems.
 - **Gauge fixing:** `model.apply_gauge` is applied after every optimizer step so that `h` and `J` stay in a consistent, symmetric, zero-diagonal representation. If comparing recovered parameters against another library, ensure both are evaluated in the same gauge.
 
 ## Roadmap
-- **Mathematical documentation:** A dedicated section deriving the likelihood, pseudo-likelihood, and gradients for both models.
-- **PyTorch backend:** Expanding backend support to include `torch`.
+- **Minimum probability flow:** The minimum probability flow algorithm will be implemented.
+- **Interaction screening:** Interaction screening will be implemented.

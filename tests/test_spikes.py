@@ -1,8 +1,8 @@
 import numpy as np
 
-from models.ising import IsingModel
-from models.potts import PottsModel
-from data.spikes import (
+from spininfer.models.ising import IsingModel
+from spininfer.models.potts import PottsModel
+from spininfer.data.spikes import (
     spikes_to_ising,
     spikes_to_potts,
     bin_ising,

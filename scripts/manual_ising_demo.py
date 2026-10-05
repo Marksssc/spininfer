@@ -1,13 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from models.ising import IsingModel
-from data.generate import generate_data
-from data.dataset import Dataset
-from objectives.PLE_ising import PleIsingObjective
-from optimizers.adam import Adam
-from fitters.lbfgs_fitter import LbfgsFitter
-from fitters.inverse_fitter import InverseFitter
+from spininfer.models.ising import IsingModel
+from spininfer.data.generate import generate_data
+from spininfer.data.dataset import Dataset
+from spininfer.objectives.PLE_ising import PleIsingObjective
+from spininfer.optimizers.adam import Adam
+from spininfer.fitters.lbfgs_fitter import LbfgsFitter
+from spininfer.fitters.inverse_fitter import InverseFitter
 
 N_SITES = 50
 N_SAMPLES = 200000

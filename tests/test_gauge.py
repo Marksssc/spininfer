@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 import itertools
-from models.ising import IsingModel
-from models.potts import PottsModel
+from spininfer.models.ising import IsingModel
+from spininfer.models.potts import PottsModel
 
 def _all_states(model):
     if isinstance(model, IsingModel):

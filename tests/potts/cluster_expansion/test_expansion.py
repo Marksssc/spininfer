@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from cluster_expansion.expansion import next_level, compute_delta_S
+from spininfer.cluster_expansion.expansion import next_level, compute_delta_S
 
 
 def test_next_level_keeps_only_candidates_with_all_subsets_kept():

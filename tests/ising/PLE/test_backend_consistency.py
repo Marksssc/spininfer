@@ -1,6 +1,6 @@
 import numpy as np
 import cupy as cp
-from objectives import PLE_ising_numpy, PLE_ising_numba, PLE_ising_cupy, PLE_ising_jax
+from spininfer.objectives import PLE_ising_numpy, PLE_ising_numba, PLE_ising_cupy, PLE_ising_jax
 
 def test_consistency():
     rng = np.random.default_rng(0)

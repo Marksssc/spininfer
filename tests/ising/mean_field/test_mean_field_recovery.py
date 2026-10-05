@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-from models.ising import IsingModel
-from data.generate import generate_data
-from data.dataset import Dataset
-from fitters.mean_field_fitter import NaiveMeanFieldFitter, TAPMeanFieldFitter, IndependentPairFitter, SessakMonassonFitter, BetheFitter
+from spininfer.models.ising import IsingModel
+from spininfer.data.generate import generate_data
+from spininfer.data.dataset import Dataset
+from spininfer.fitters.mean_field_fitter import NaiveMeanFieldFitter, TAPMeanFieldFitter, IndependentPairFitter, SessakMonassonFitter, BetheFitter
 
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, h_max_err, J_max_err", [

@@ -1,8 +1,8 @@
 import numpy as np
-from models.ising import IsingModel
-from models.potts import PottsModel
-from stats.exact_estimator import ExactEstimator
-from stats.mcmc_estimator import McmcEstimator
+from spininfer.models.ising import IsingModel
+from spininfer.models.potts import PottsModel
+from spininfer.stats.exact_estimator import ExactEstimator
+from spininfer.stats.mcmc_estimator import McmcEstimator
 
 
 def test_ising_exact_matches_mcmc():

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from models.potts import PottsModel
-from stats.exact_estimator import ExactEstimator
-from stats.mcmc_estimator import McmcEstimator
+from spininfer.models.potts import PottsModel
+from spininfer.stats.exact_estimator import ExactEstimator
+from spininfer.stats.mcmc_estimator import McmcEstimator
 
 N_SITES = 5
 N_STATES = 3

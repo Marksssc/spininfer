@@ -4,13 +4,13 @@ import numpy as np
 import pytest
 from scipy.special import logsumexp
 
-from models.ising import IsingModel
-from data.generate import generate_data
-from data.dataset import Dataset
-from stats.moments import Moments
-from objectives.moment_matching import MomentMatchingObjective
-from stats.exact_estimator import ExactEstimator
-from fitters.lbfgs_fitter import LbfgsFitter
+from spininfer.models.ising import IsingModel
+from spininfer.data.generate import generate_data
+from spininfer.data.dataset import Dataset
+from spininfer.stats.moments import Moments
+from spininfer.objectives.moment_matching import MomentMatchingObjective
+from spininfer.stats.exact_estimator import ExactEstimator
+from spininfer.fitters.lbfgs_fitter import LbfgsFitter
 
 
 def _setup(n_sites=6, seed=0):

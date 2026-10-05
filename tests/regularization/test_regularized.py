@@ -1,7 +1,7 @@
 import numpy as np
 
-from objectives.gradient import Gradient
-from objectives.regularized import RegularizedObjective
+from spininfer.objectives.gradient import Gradient
+from spininfer.objectives.regularized import RegularizedObjective
 
 class MockArrayBackend:
     xp = np

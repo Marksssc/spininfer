@@ -1,5 +1,5 @@
 import numpy as np
-from objectives.regularization import L1Regularizer, L2Regularizer, CompositeRegularizer, default_regularization_strength
+from spininfer.objectives.regularization import L1Regularizer, L2Regularizer, CompositeRegularizer, default_regularization_strength
 
 
 class MockArrayBackend:

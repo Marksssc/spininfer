@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
-from optimizers.gradient_ascent import GradientAscent
-from optimizers.adam import Adam
-from models.ising import IsingModel
+from spininfer.optimizers.gradient_ascent import GradientAscent
+from spininfer.optimizers.adam import Adam
+from spininfer.models.ising import IsingModel
 
 @pytest.mark.parametrize("optimizer_cls", [GradientAscent, Adam])
 def test_step_moves_toward_gradient(optimizer_cls):
