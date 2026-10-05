@@ -4,11 +4,12 @@ from functools import lru_cache
 
 @lru_cache(maxsize=None)
 def _enumerate_all_states(n_sites: int, n_states: int):
-    num_configs = n_states ** n_sites
-    idx = jnp.arange(num_configs, dtype=jnp.int64)[:, None]
-    exponents = jnp.arange(n_sites - 1, -1, -1, dtype=jnp.int64)[None, :]
-    powers = n_states ** exponents
-    return (idx // powers) % n_states
+    with jax.ensure_compile_time_eval():
+        num_configs = n_states ** n_sites
+        idx = jnp.arange(num_configs, dtype=jnp.int64)[:, None]
+        exponents = jnp.arange(n_sites - 1, -1, -1, dtype=jnp.int64)[None, :]
+        powers = n_states ** exponents
+        return (idx // powers) % n_states
 
 @jax.jit
 def _exact_distribution(h, J):

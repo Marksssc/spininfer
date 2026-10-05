@@ -18,8 +18,8 @@ from spininfer.convergence.criteria import GradientNormConvergence, MomentMatchC
     pytest.param(0.0, 0.5, 0.5, 0.5, 3, 0.15, id="skewed_J"),
 ])
 
-def test_moment_matching_recovery(loc_h, scale_h, loc_J, scale_J, n_states, max_err):
-    model = PottsModel(n_sites=30, n_states=n_states, backend="numba")
+def test_moment_matching_recovery(loc_h, scale_h, loc_J, scale_J, n_states, max_err, backend, to_numpy):
+    model = PottsModel(n_sites=30, n_states=n_states, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=10000, seed=1,
                            loc_h=loc_h, scale_h=scale_h, loc_J=loc_J, scale_J=scale_J)
     dataset = Dataset(samples=truth.samples, model=model)
@@ -34,8 +34,8 @@ def test_moment_matching_recovery(loc_h, scale_h, loc_J, scale_J, n_states, max_
     result = fitter.fit(h_init, J_init)
     h, J = result.h, result.J
 
-    h_err = np.abs(h - truth.h).mean()
-    J_err = np.abs(J - truth.J).mean()
+    h_err = np.abs(to_numpy(h) - to_numpy(truth.h)).mean()
+    J_err = np.abs(to_numpy(J) - to_numpy(truth.J)).mean()
 
     assert h_err < max_err, f"h recovery error too high: {h_err}"
     assert J_err < max_err, f"J recovery error too high: {J_err}"

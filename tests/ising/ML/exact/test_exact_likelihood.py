@@ -13,26 +13,31 @@ from spininfer.stats.exact_estimator import ExactEstimator
 from spininfer.fitters.lbfgs_fitter import LbfgsFitter
 
 
-def _setup(n_sites=6, seed=0):
-    model = IsingModel(n_sites=n_sites, backend="numpy")
+def _setup(backend, n_sites=6, seed=0):
+    model = IsingModel(n_sites=n_sites, backend=backend)
     truth = generate_data(model, n_samples=2000, iterations=200, seed=seed)
     dataset = Dataset(samples=truth.samples, model=model)
     h, J = model.random_params(seed=seed + 1)
     return model, dataset, h, J
 
 
-def test_value_matches_mean_log_probability():
-    model, dataset, h, J = _setup()
-    states = np.array(list(itertools.product([-1.0, 1.0], repeat=model.n_sites)))
-    log_Z = logsumexp(-model.compute_energy(h, J, states))
-    expected = np.mean(-model.compute_energy(h, J, dataset.samples)) - log_Z
-
+def test_value_matches_mean_log_probability(backend, to_numpy):
+    model, dataset, h, J = _setup(backend)
     value = MomentMatchingObjective(ExactEstimator()).compute_value(model, h, J, dataset)
-    assert np.isclose(value, expected, rtol=1e-10, atol=1e-10)
+    h_np, J_np, samples = to_numpy(h), to_numpy(J), to_numpy(dataset.samples)
+    def energy(s):
+        return -(s @ h_np + 0.5 * np.einsum("ni,ij,nj->n", s, J_np, s))
+
+    states = np.array(list(itertools.product([-1.0, 1.0], repeat=model.n_sites)))
+    log_Z = logsumexp(-energy(states))
+    expected = np.mean(-energy(samples)) - log_Z
+
+    assert np.isclose(float(value), expected, rtol=1e-10, atol=1e-10)
 
 
-def test_gradient_matches_finite_differences():
-    model, dataset, h, J = _setup()
+
+def test_gradient_matches_finite_differences(backend):
+    model, dataset, h, J = _setup(backend)
     objective = MomentMatchingObjective(ExactEstimator())
     grad = objective.compute_gradient(model, h, J, dataset)
     eps = 1e-6
@@ -50,9 +55,7 @@ def test_gradient_matches_finite_differences():
         assert np.isclose(fd, grad.grad_J[i, j] + grad.grad_J[j, i], atol=1e-6)
 
 
-@pytest.mark.parametrize("backend", ["numpy", pytest.param("jax", marks=pytest.mark.skipif(
-    importlib.util.find_spec("jax") is None, reason="jax not installed"))])
-def test_lbfgs_recovers_parameters_from_exact_moments(backend):
+def test_lbfgs_recovers_parameters_from_exact_moments(backend, to_numpy):
     model = IsingModel(n_sites=8, backend=backend)
     h_true, J_true = model.random_params(seed=3)
     mean_s, mean_ss = model.exact_statistics(h_true, J_true)
@@ -62,5 +65,5 @@ def test_lbfgs_recovers_parameters_from_exact_moments(backend):
                          dataset=dataset, tol=1e-10, maxiter=1000)
     result = fitter.fit(*model.random_params(seed=4))
 
-    assert np.allclose(np.asarray(result.h), np.asarray(h_true), atol=1e-4)
-    assert np.allclose(np.asarray(result.J), np.asarray(J_true), atol=1e-4)
+    assert np.allclose(to_numpy(result.h), to_numpy(h_true), atol=1e-4)
+    assert np.allclose(to_numpy(result.J), to_numpy(J_true), atol=1e-4)

@@ -5,11 +5,12 @@ import itertools
 
 @lru_cache(maxsize=None)
 def _enumerate_all_states(n_sites: int):
-    n_configs = 1 << n_sites
-    idx = jnp.arange(n_configs, dtype=jnp.int64)[:, None]
-    shifts = jnp.arange(n_sites, dtype=jnp.int64)[None, :]
-    bits = (idx >> shifts) & 1
-    return bits.astype(jnp.float64) * 2 - 1
+    with jax.ensure_compile_time_eval():
+        n_configs = 1 << n_sites
+        idx = jnp.arange(n_configs, dtype=jnp.int64)[:, None]
+        shifts = jnp.arange(n_sites, dtype=jnp.int64)[None, :]
+        bits = (idx >> shifts) & 1
+        return bits.astype(jnp.float64) * 2 - 1
 
 def _state_energy(h, J, state):
     return -jnp.dot(h, state) - 0.5 * jnp.dot(state, jnp.dot(J, state))

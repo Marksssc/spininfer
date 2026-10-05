@@ -7,8 +7,8 @@ from spininfer.stats.exact_thermodynamics_estimator import ExactThermodynamicsEs
 from spininfer.stats.thermodynamics_integration_estimator import ThermodynamicsIntegrationEstimator
 
 
-def test_ising_zero_field_zero_coupling_matches_closed_form():
-    model = IsingModel(n_sites=5, backend="numpy")
+def test_ising_zero_field_zero_coupling_matches_closed_form(backend):
+    model = IsingModel(n_sites=5, backend=backend)
     h, J = np.zeros(5), np.zeros((5, 5))
 
     t = ExactThermodynamicsEstimator().estimate(model, h, J)
@@ -19,8 +19,8 @@ def test_ising_zero_field_zero_coupling_matches_closed_form():
     assert np.isclose(t.free_energy, -5 * np.log(2), atol=1e-8)
 
 
-def test_potts_zero_field_zero_coupling_matches_closed_form():
-    model = PottsModel(n_sites=4, n_states=3, backend="numpy")
+def test_potts_zero_field_zero_coupling_matches_closed_form(backend):
+    model = PottsModel(n_sites=4, n_states=3, backend=backend)
     h, J = np.zeros((4, 3)), np.zeros((4, 4, 3, 3))
 
     t = ExactThermodynamicsEstimator().estimate(model, h, J)
@@ -31,20 +31,23 @@ def test_potts_zero_field_zero_coupling_matches_closed_form():
     assert np.isclose(t.free_energy, -4 * np.log(3), atol=1e-8)
 
 
-def test_ising_free_energy_matches_reference_when_uncoupled():
-    model = IsingModel(n_sites=5, backend="numpy")
+def test_ising_free_energy_matches_reference_when_uncoupled(backend):
+    model = IsingModel(n_sites=5, backend=backend)
+    xp = model.array_backend.xp
     h, _ = model.random_params(scale_h=0.5, seed=0)
-    J = np.zeros((5, 5))
+    J = xp.asarray(np.zeros((5, 5)))
 
     t = ExactThermodynamicsEstimator().estimate(model, h, J)
 
     assert np.isclose(t.free_energy, model.reference_free_energy(h), atol=1e-8)
 
 
-def test_potts_free_energy_matches_reference_when_uncoupled():
-    model = PottsModel(n_sites=4, n_states=3, backend="numpy")
+def test_potts_free_energy_matches_reference_when_uncoupled(backend):
+    model = PottsModel(n_sites=4, n_states=3, backend=backend)
+    xp = model.array_backend.xp
+
     h, _ = model.random_params(scale_h=0.5, seed=0)
-    J = np.zeros((4, 4, 3, 3))
+    J = xp.asarray(np.zeros((4, 4, 3, 3)))
 
     t = ExactThermodynamicsEstimator().estimate(model, h, J)
 
@@ -83,8 +86,8 @@ def test_exact_thermodynamics_bounds(model):
 
 
 @pytest.mark.parametrize("model", [
-    IsingModel(n_sites=6, backend="numba"),
-    PottsModel(n_sites=4, n_states=3, backend="numba"),
+    IsingModel(n_sites=6, backend="numpy"),
+    PottsModel(n_sites=4, n_states=3, backend="numpy"),
 ])
 def test_thermodynamic_integration_matches_exact(model):
     h, J = model.random_params(scale_h=0.3, scale_J=0.3, seed=1)

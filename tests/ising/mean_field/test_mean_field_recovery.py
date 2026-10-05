@@ -9,10 +9,10 @@ from spininfer.fitters.mean_field_fitter import NaiveMeanFieldFitter, TAPMeanFie
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, h_max_err, J_max_err", [
     pytest.param(0.0, 0.1, 0.0, 0.5, 0.05, 0.03, id="weak_coupling"),
 ])
-def test_naive_mean_field_recovery(loc_h, scale_h, loc_J, scale_J, h_max_err, J_max_err):
+def test_naive_mean_field_recovery(loc_h, scale_h, loc_J, scale_J, h_max_err, J_max_err, backend, to_numpy):
     """NaiveMeanFieldFitter should recover weak-coupling ground truth from MCMC-sampled data,
     in one closed-form step."""
-    model = IsingModel(n_sites=10, backend="numba")
+    model = IsingModel(n_sites=10, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=2000, seed=1,
                            loc_h=loc_h, scale_h=scale_h, loc_J=loc_J,
                            scale_J=scale_J / np.sqrt(model.n_sites))
@@ -21,8 +21,8 @@ def test_naive_mean_field_recovery(loc_h, scale_h, loc_J, scale_J, h_max_err, J_
     fitter = NaiveMeanFieldFitter(model=model, dataset=dataset)
     result = fitter.fit()
 
-    h_err = np.abs(result.h - truth.h).mean()
-    J_err = np.abs(result.J - truth.J).mean()
+    h_err = np.abs(to_numpy(result.h - truth.h)).mean()
+    J_err = np.abs(to_numpy(result.J - truth.J)).mean()
 
     assert h_err < h_max_err, f"h recovery error too high: {h_err}"
     assert J_err < J_max_err, f"J recovery error too high: {J_err}"
@@ -30,10 +30,10 @@ def test_naive_mean_field_recovery(loc_h, scale_h, loc_J, scale_J, h_max_err, J_
     assert result.n_steps == 1
 
 
-def test_tap_recovery():
+def test_tap_recovery(backend, to_numpy):
     """TAPMeanFieldFitter should recover weak-coupling ground truth from MCMC-sampled data
     in one closed-form step."""
-    model = IsingModel(n_sites=10, backend="numba")
+    model = IsingModel(n_sites=10, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=2000, seed=1,
                            loc_h=0.0, scale_h=0.3, loc_J=0.0,
                            scale_J=0.5 / np.sqrt(model.n_sites))
@@ -41,16 +41,16 @@ def test_tap_recovery():
 
     result = TAPMeanFieldFitter(model=model, dataset=dataset).fit()
 
-    assert np.abs(result.h - truth.h).mean() < 0.05
-    assert np.abs(result.J - truth.J).mean() < 0.03
+    assert np.abs(to_numpy(result.h - truth.h)).mean() < 0.05
+    assert np.abs(to_numpy(result.J - truth.J)).mean() < 0.03
     assert result.converged is True
     assert result.n_steps == 1
 
 
-def test_independent_pair_recovery():
+def test_independent_pair_recovery(backend, to_numpy):
     """IndependentPairFitter should recover weak-coupling ground truth from MCMC-sampled data
     in one closed-form step."""
-    model = IsingModel(n_sites=10, backend="numba")
+    model = IsingModel(n_sites=10, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=2000, seed=1,
                            loc_h=0.0, scale_h=0.3, loc_J=0.0,
                            scale_J=0.5 / np.sqrt(model.n_sites))
@@ -58,16 +58,16 @@ def test_independent_pair_recovery():
 
     result = IndependentPairFitter(model=model, dataset=dataset).fit()
 
-    assert np.abs(result.h - truth.h).mean() < 0.05
-    assert np.abs(result.J - truth.J).mean() < 0.03
+    assert np.abs(to_numpy(result.h - truth.h)).mean() < 0.05
+    assert np.abs(to_numpy(result.J - truth.J)).mean() < 0.03
     assert result.converged is True
     assert result.n_steps == 1
 
 
-def test_sessak_monasson_recovery():
+def test_sessak_monasson_recovery(backend, to_numpy):
     """SessakMonassonFitter should recover weak-coupling ground truth from MCMC-sampled data
     in one closed-form step."""
-    model = IsingModel(n_sites=10, backend="numba")
+    model = IsingModel(n_sites=10, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=2000, seed=1,
                            loc_h=0.0, scale_h=0.3, loc_J=0.0,
                            scale_J=0.5 / np.sqrt(model.n_sites))
@@ -75,16 +75,16 @@ def test_sessak_monasson_recovery():
 
     result = SessakMonassonFitter(model=model, dataset=dataset).fit()
 
-    assert np.abs(result.h - truth.h).mean() < 0.05
-    assert np.abs(result.J - truth.J).mean() < 0.03
+    assert np.abs(to_numpy(result.h - truth.h)).mean() < 0.05
+    assert np.abs(to_numpy(result.J - truth.J)).mean() < 0.03
     assert result.converged is True
     assert result.n_steps == 1
 
 
-def test_bethe_recovery():
+def test_bethe_recovery(backend, to_numpy):
     """BetheFitter should recover weak-coupling ground truth from MCMC-sampled data
     in one closed-form step."""
-    model = IsingModel(n_sites=10, backend="numba")
+    model = IsingModel(n_sites=10, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=2000, seed=1,
                            loc_h=0.0, scale_h=0.3, loc_J=0.0,
                            scale_J=0.5 / np.sqrt(model.n_sites))
@@ -92,7 +92,7 @@ def test_bethe_recovery():
 
     result = BetheFitter(model=model, dataset=dataset).fit()
 
-    assert np.abs(result.h - truth.h).mean() < 0.05
-    assert np.abs(result.J - truth.J).mean() < 0.03
+    assert np.abs(to_numpy(result.h - truth.h)).mean() < 0.05
+    assert np.abs(to_numpy(result.J - truth.J)).mean() < 0.03
     assert result.converged is True
     assert result.n_steps == 1

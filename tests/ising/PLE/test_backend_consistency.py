@@ -1,8 +1,15 @@
-import numpy as np
-import cupy as cp
-from spininfer.objectives import PLE_ising_numpy, PLE_ising_numba, PLE_ising_cupy, PLE_ising_jax
+import importlib
 
-def test_consistency():
+import numpy as np
+import pytest
+from spininfer.models.ising import IsingModel
+from spininfer.objectives import PLE_ising_numpy
+
+
+def test_consistency(backend, to_numpy):
+    if backend == "numpy":
+        pytest.skip("numpy is the reference backend")
+
     rng = np.random.default_rng(0)
     sites = 10
     h = rng.normal(scale=0.2, size=sites)
@@ -10,26 +17,16 @@ def test_consistency():
     J = (J + J.T) / 2
     np.fill_diagonal(J, 0.0)
     data = rng.choice([-1, 1], size=(500, sites)).astype(np.float64)
-    empirical_mean_s = data.mean(axis=0)
-    empirical_mean_ss = (data.T @ data) / data.shape[0]
+    mean_s = data.mean(axis=0)
+    mean_ss = (data.T @ data) / data.shape[0]
 
-    val_np, hg_np, Jg_np = PLE_ising_numpy.value_and_gradient(h, J, data, empirical_mean_s, empirical_mean_ss)
-    val_nb, hg_nb, Jg_nb = PLE_ising_numba.value_and_gradient(h, J, data, empirical_mean_s, empirical_mean_ss)
-    val_cp, hg_cp, Jg_cp = PLE_ising_cupy.value_and_gradient(
-        cp.asarray(h), cp.asarray(J), cp.asarray(data),
-        cp.asarray(empirical_mean_s), cp.asarray(empirical_mean_ss)
-    )
-    val_jx, hg_jx, Jg_jx = PLE_ising_jax.value_and_gradient(h, J, data, empirical_mean_s, empirical_mean_ss)
+    val_np, hg_np, Jg_np = PLE_ising_numpy.value_and_gradient(h, J, data, mean_s, mean_ss)
 
-    val_cp, hg_cp, Jg_cp = cp.asnumpy(val_cp), cp.asnumpy(hg_cp), cp.asnumpy(Jg_cp)
-    val_jx, hg_jx, Jg_jx = np.asarray(val_jx), np.asarray(hg_jx), np.asarray(Jg_jx)
+    kernel = importlib.import_module(f"spininfer.objectives.PLE_ising_{backend}")
+    xp = IsingModel(n_sites=2, backend=backend).array_backend.xp
+    val, hg, Jg = kernel.value_and_gradient(*map(xp.asarray, (h, J, data, mean_s, mean_ss)))
 
-    for val, hg, Jg, name in [
-        (val_nb, hg_nb, Jg_nb, "numba"),
-        (val_cp, hg_cp, Jg_cp, "cupy"),
-        (val_jx, hg_jx, Jg_jx, "jax"),
-    ]:
-        rtol, atol = (1e-3, 1e-5) if name == "jax" else (1e-5, 1e-8) # on some devices jax automatically switches to less precise matrix operations
-        assert np.isclose(val_np, val, rtol=rtol, atol=atol), f"value mismatch: numpy vs {name}"
-        assert np.allclose(hg_np, hg, rtol=rtol, atol=atol), f"h gradient mismatch: numpy vs {name}"
-        assert np.allclose(Jg_np, Jg, rtol=rtol, atol=atol), f"J gradient mismatch: numpy vs {name}"
+    rtol, atol = (1e-3, 1e-5) if backend == "jax" else (1e-5, 1e-8)  # jax may use lower-precision matmuls on some devices
+    assert np.isclose(val_np, float(val), rtol=rtol, atol=atol), f"value mismatch: numpy vs {backend}"
+    assert np.allclose(hg_np, to_numpy(hg), rtol=rtol, atol=atol), f"h gradient mismatch: numpy vs {backend}"
+    assert np.allclose(Jg_np, to_numpy(Jg), rtol=rtol, atol=atol), f"J gradient mismatch: numpy vs {backend}"

@@ -23,8 +23,8 @@ def test_flatten_unflatten_roundtrip():
     assert np.array_equal(h_back, h)
     assert np.array_equal(J_back, J)
 
-def test_lbfgs_recovers_parameters_ising():
-    model = IsingModel(n_sites=15, backend="numba")
+def test_lbfgs_recovers_parameters_ising(backend, to_numpy):
+    model = IsingModel(n_sites=15, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=1000, seed=1)
     dataset = Dataset(samples=truth.samples, model=model)
 
@@ -33,11 +33,11 @@ def test_lbfgs_recovers_parameters_ising():
     result = fitter.fit(h_init, J_init)
     h, J = result.h, result.J
 
-    assert np.abs(h - truth.h).mean() < 0.05
-    assert np.abs(J - truth.J).mean() < 0.05
+    assert np.abs(to_numpy(h) - to_numpy(truth.h)).mean() < 0.05
+    assert np.abs(to_numpy(J) - to_numpy(truth.J)).mean() < 0.05
 
-def test_lbfgs_recovers_parameters_potts():
-    model = PottsModel(n_sites=15, n_states=3, backend="numba")
+def test_lbfgs_recovers_parameters_potts(backend, to_numpy):
+    model = PottsModel(n_sites=15, n_states=3, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=1000, seed=1)
     dataset = Dataset(samples=truth.samples, model=model)
 
@@ -46,11 +46,11 @@ def test_lbfgs_recovers_parameters_potts():
     result = fitter.fit(h_init, J_init)
     h, J = result.h, result.J
 
-    assert np.abs(h - truth.h).mean() < 0.05
-    assert np.abs(J - truth.J).mean() < 0.05
+    assert np.abs(to_numpy(h) - to_numpy(truth.h)).mean() < 0.05
+    assert np.abs(to_numpy(J) - to_numpy(truth.J)).mean() < 0.05
 
-def test_lbfgs_moves_the_cost_in_the_right_direction():
-    model = IsingModel(n_sites=15, backend="numba")
+def test_lbfgs_moves_the_cost_in_the_right_direction(backend):
+    model = IsingModel(n_sites=15, backend=backend)
     truth = generate_data(model, n_samples=20_000, iterations=1000, seed=1)
     dataset = Dataset(samples=truth.samples, model=model)
     objective = PleIsingObjective()
@@ -65,8 +65,8 @@ def test_lbfgs_moves_the_cost_in_the_right_direction():
 
     assert value_after > value_before
 
-def test_lbfgs_rejects_objective_without_value():
-    model = IsingModel(n_sites=8, backend="numpy")
+def test_lbfgs_rejects_objective_without_value(backend):
+    model = IsingModel(n_sites=8, backend=backend)
     h, J = model.random_params(seed=0)
     truth = generate_data(model, n_samples=500, iterations=200, seed=1)
     dataset = Dataset(samples=truth.samples, model=model)
