@@ -7,16 +7,16 @@ Inverse Ising and Potts inference is used wherever you want a maximum-entropy mo
 ## What's in the repo
 
 - **Two models**: Ising (binary ±1 spins) and Potts (`q`-state categorical).
-- **Four array backends**: `numpy`, `numba`, `cupy`, `jax` with the same interface, which can be swapped by an input string. `cupy`/`jax` are optional and the library falls back if these are not installed.
+- **Four array backends**: `numpy`, `numba`, `cupy`, `jax` with the same interface, which can be swapped by an input string. `cupy`/`jax` are optional and the library falls back if these are not installed. Note that JAX by default has float 32 precision. To get float 64 precision run `jax.config.update("jax_enable_x64", True)`.
 - **Three families of inference methods** (details and references in [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)):
   - *Likelihood-based:* maximum likelihood by moment matching, and pseudolikelihood.
   - *Closed-form mean-field:* naive mean field, TAP, independent pair, Sessak–Monasson and Bethe. These need only the first and second moments. TAP and Bethe are Ising-only.
   - *Adaptive cluster expansion:* builds the parameters from smaller clusters.
-  - **Two ways to compute model statistics**: exact enumeration (small systems only) and MCMC (Metropolis, scales to hundreds of sites but can take considerable computing and time).
-  - **Thermodynamic variables**: calculation of the energy, free energy, entropy, and heat capacity through exact enumeration or thermodynamic integration.
-  - **Optimizers and fitters**: gradient ascent and Adam, a custom gradient-loop fitter, and an L-BFGS wrapper around `scipy.optimize.minimize` or `optax.lbfgs` for faster convergence.
-  - **Regularization**: L1 and L2 penalties that can be applied to any objective.
-  - **Data loading**: raw sample matrices, spike trains and protein multiple sequence alignments transformed to Ising/Potts datasets.
+- **Two ways to compute model statistics**: exact enumeration (small systems only) and MCMC (Metropolis, scales to hundreds of sites but can take considerable computing and time).
+- **Thermodynamic variables**: calculation of the energy, free energy, entropy, and heat capacity through exact enumeration or thermodynamic integration.
+- **Optimizers and fitters**: gradient ascent and Adam, a custom gradient-loop fitter, and an L-BFGS wrapper around `scipy.optimize.minimize` or `optax.lbfgs` for faster convergence.
+- **Regularization**: L1 and L2 penalties that can be applied to any objective.
+- **Data loading**: raw sample matrices, spike trains and protein multiple sequence alignments transformed to Ising/Potts datasets.
 
 The pieces are written in a modular fashion and can thus be mixed.
 
@@ -120,7 +120,7 @@ fitter_nmf = NaiveMeanFieldFitter(model=model, dataset=dataset)
 fitter_tap = TAPMeanFieldFitter(model=model, dataset=dataset) #Ising only
 fitter_ipa = IndependentPairFitter(model=model, dataset=dataset)
 fitter_sm = SessakMonassonFitter(model=model, dataset=dataset)
-fitter_beth = BetheFitter(model=model, dataset=dataset) #Ising only
+fitter_bethe = BetheFitter(model=model, dataset=dataset) #Ising only
 
 result = fitter_nmf.fit()
 h_nmf, J_nmf = result.h, result.J
@@ -139,10 +139,10 @@ Another method that is good at recovering strong coupling is adaptive cluster ex
 
 ```python
 # Adaptive cluster expansion
-from spininfer.fitters.ACE_fitter import ACEfitter
+from spininfer.fitters.ACE_fitter import ACEFitter
 
 theta = 1e-3
-fitter = ACEfitter(model=model, dataset=dataset, threshold=theta)
+fitter = ACEFitter(model=model, dataset=dataset, threshold=theta)
 ACE_result = fitter.fit()
 ```
 
@@ -173,6 +173,29 @@ fitter = InverseFitter(model=model, dataset=dataset, objective=objective,
 ```
 
 Swap `ExactEstimator()` for `McmcEstimator(n_samples=20_000, iterations=5000)` and the exact same code works on systems too large to enumerate. However in the case exact enumeration does not work I would recommend PLE.
+
+## Thermodynamic quantities
+
+Given the parameters, you can compute the free energy, energy, entropy and heat capacity, either exactly or by thermodynamic integration over MCMC samples. Units are β = 1. The following code gives an example:
+
+```python
+from spininfer.models.ising import IsingModel
+from spininfer.stats.exact_thermodynamics_estimator import ExactThermodynamicsEstimator
+from spininfer.stats.thermodynamics_integration_estimator import ThermodynamicsIntegrationEstimator
+
+model = IsingModel(n_sites=12, backend="numba")
+h, J = model.random_params(seed=1)
+
+exact = ExactThermodynamicsEstimator().estimate(model, h, J)
+ti = ThermodynamicsIntegrationEstimator(n_samples=10_000, iterations=1000).estimate(model, h, J)
+
+print(exact.free_energy, exact.energy, exact.entropy, exact.heat_capacity)
+print(ti.free_energy, ti.energy, ti.entropy, ti.heat_capacity)
+
+```
+
+Thermodynamic integration only needs MCMC samples so it can be used for large systems. The accuracy is set by `n_samples`, `iterations` and the number for integration poitns `n_points`.
+
 
 ## Regularization
 
@@ -220,7 +243,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-A couple of tests (`test_backend_consistency.py` under `tests/ising/PLE` and `tests/potts/PLE`) require a CUDA GPU and `cupy` installed, which means they'll fail to collect without one. Everything else runs on CPU. Warning for testing: the full recovery tests (`test_ising_recovery.py`, `test_potts_recovery.py`) run real Metropolis chains and thousands of optimization steps, so the tests can take quite a while to complete.
+Warning for testing: the full recovery tests (`test_ising_recovery.py`, `test_potts_recovery.py`) run real Metropolis chains and thousands of optimization steps, so the tests can take quite a while to complete.
 
 ## Notes
 - **Gauge fixing:** `model.apply_gauge` is applied after every optimizer step so that `h` and `J` stay in a consistent, symmetric, zero-diagonal representation. If comparing recovered parameters against another library, ensure both are evaluated in the same gauge.

@@ -57,7 +57,7 @@ class IndependentPairFitter:
 class SessakMonassonFitter:
     """Fits (h, J) by the Sessak-Monasson approximation and returns the resulting (h, J)"""
 
-    model: IsingModel
+    model: IsingModel | PottsModel
     dataset: Dataset
 
     def fit(self) -> FitResult:

@@ -5,7 +5,7 @@ from spininfer.data.dataset import Dataset
 from spininfer.stats.moments import Moments
 from spininfer.convergence.criteria import FitResult
 from spininfer.cluster_expansion._cluster_fit import fit_cluster
-from spininfer.fitters.ACE_fitter import ACEfitter
+from spininfer.fitters.ACE_fitter import ACEFitter
 
 
 def _exact_dataset(backend, n_sites=5, n_states=3, seed=0):
@@ -18,7 +18,7 @@ def _exact_dataset(backend, n_sites=5, n_states=3, seed=0):
 
 def test_zero_threshold_reproduces_full_fit(backend, to_numpy):
     model, dataset = _exact_dataset(backend)
-    result = ACEfitter(model, dataset, threshold=0.0, regularizer=None, max_size=model.n_sites).fit()
+    result = ACEFitter(model, dataset, threshold=0.0, regularizer=None, max_size=model.n_sites).fit()
     full = fit_cluster(model, dataset, sites=range(model.n_sites))
 
     assert np.allclose(to_numpy(result.h), to_numpy(full.h), atol=1e-8)
@@ -28,7 +28,7 @@ def test_zero_threshold_reproduces_full_fit(backend, to_numpy):
 
 def test_huge_threshold_gives_independent_sites(backend, to_numpy):
     model, dataset = _exact_dataset(backend)
-    result = ACEfitter(model, dataset, threshold=1e6, regularizer=None).fit()
+    result = ACEFitter(model, dataset, threshold=1e6, regularizer=None).fit()
     log_p = np.log(dataset.moments.mean_s)
 
 
@@ -41,7 +41,7 @@ def test_huge_threshold_gives_independent_sites(backend, to_numpy):
 
 def test_max_size_limits_cluster_size(backend):
     model, dataset = _exact_dataset(backend)
-    result = ACEfitter(model, dataset, threshold=0.0, regularizer=None, max_size=2).fit()
+    result = ACEFitter(model, dataset, threshold=0.0, regularizer=None, max_size=2).fit()
 
     assert max(result.kept) == 2
     assert all(len(cluster) <= 2 for cluster in result.delta_S)
@@ -49,8 +49,8 @@ def test_max_size_limits_cluster_size(backend):
 
 def test_positive_threshold_keeps_fewer_clusters(backend):
     model, dataset = _exact_dataset(backend)
-    loose = ACEfitter(model, dataset, threshold=0.0, regularizer=None).fit()
-    strict = ACEfitter(model, dataset, threshold=0.01, regularizer=None).fit()
+    loose = ACEFitter(model, dataset, threshold=0.0, regularizer=None).fit()
+    strict = ACEFitter(model, dataset, threshold=0.01, regularizer=None).fit()
 
     n_loose = sum(len(level) for level in loose.kept.values())
     n_strict = sum(len(level) for level in strict.kept.values())
@@ -61,7 +61,7 @@ def test_positive_threshold_keeps_fewer_clusters(backend):
 
 def test_result_is_a_fit_result(backend, to_numpy):
     model, dataset = _exact_dataset(backend)
-    result = ACEfitter(model, dataset, threshold=0.01).fit()
+    result = ACEFitter(model, dataset, threshold=0.01).fit()
 
     assert isinstance(result, FitResult)
     assert result.h.shape == (model.n_sites, model.n_states)

@@ -22,7 +22,7 @@ class ClusterExpansionFitResult(FitResult):
 
 
 @dataclass
-class ACEfitter:
+class ACEFitter:
     model: Model
     dataset: Dataset
     threshold: float

@@ -27,14 +27,14 @@ J is symmetric with zero diagonal (blocks). Papers often write the pair sum as �
 
 | Method | Code | Speed | Exact? | Derivation | References |
 |---|---|---|---|---|---|
-| Maximum likelihood (moment matching) | `objectives/moment_matching.py` with `fitters/` | slow | yes (with exact statistics) | `Maximum_Likelihood.pdf` | Schneidman 2006; Nguyen 2017 |
-| Pseudo-likelihood | `objectives/PLE_ising.py`, `objectives/PLE_potts.py` | fast | consistent for many samples | `Pseudo_Likelihood.pdf` | Besag 1974; Ekeberg 2013 |
-| Naive mean field | `mean_field/ising.py`, `mean_field/potts.py` | closed form | weak coupling only | `Naive_mean_field_approximations.pdf` | Roudi 2009 |
-| TAP | `mean_field/ising.py` (Ising only) | closed form | weak coupling only | — | Thouless 1977; Roudi 2009 |
-| Independent pair | `mean_field/ising.py`, `mean_field/potts.py` | closed form | sparse / tree-like | — | Roudi 2009 |
-| Sessak–Monasson | `mean_field/ising.py`, `mean_field/potts.py` | closed form | small correlations | — | Sessak & Monasson 2009 |
-| Bethe | `mean_field/ising.py` (Ising only) | closed form | tree-like | — | Nguyen & Berg (2012); Ricci-Tersenghi (2012) |
-| Adaptive cluster expansion | `cluster_expansion/`, `fitters/ACE_fitter.py` | medium | yes as threshold → 0 | — | Cocco & Monasson 2011; Barton 2016 |
+| Maximum likelihood (moment matching) | `src/spininfer/objectives/moment_matching.py` with `src/spininfer/fitters/` | slow | yes (with exact statistics) | `Maximum_Likelihood.pdf` | Schneidman 2006; Nguyen 2017 |
+| Pseudo-likelihood | `src/spininfer/objectives/PLE_ising.py`, `src/spininfer/objectives/PLE_potts.py` | fast | consistent for many samples | `Pseudo_Likelihood.pdf` | Besag 1974; Besag 1975; Ekeberg 2013 |
+| Naive mean field | `src/spininfer/mean_field/ising.py`, `src/spininfer/mean_field/potts.py` | closed form | weak coupling only | `Naive_mean_field_approximations.pdf` | Roudi 2009 |
+| TAP | `src/spininfer/mean_field/ising.py` (Ising only) | closed form | weak coupling only | — | Thouless 1977; Roudi 2009 |
+| Independent pair | `src/spininfer/mean_field/ising.py`, `src/spininfer/mean_field/potts.py` | closed form | isolated pairs | — | Roudi 2009 |
+| Sessak–Monasson | `src/spininfer/mean_field/ising.py`, `src/spininfer/mean_field/potts.py` | closed form | small correlations | — | Sessak & Monasson 2009 |
+| Bethe | `src/spininfer/mean_field/ising.py` (Ising only) | closed form | tree-like | — | Nguyen & Berg 2012; Ricci-Tersenghi 2012 |
+| Adaptive cluster expansion | `src/spininfer/cluster_expansion/`, `src/spininfer/fitters/ACE_fitter.py` | medium | yes as threshold → 0 | — | Cocco & Monasson 2011; Barton 2016 |
 
 ## Short description
 ### Maximum likelihood
@@ -50,7 +50,7 @@ For a detailed derivation see ```Maximum_Likelihood.pdf```.
 In the Pseudo likelihood approach, you are maximizing the log pseudo likelihood term given by:
 
 ```math
-\mathcal{L} = \frac{1}{M}\sum_{j=1}^M\sum_{i=1}^N \ln{P(\sigma_i^j | \boldsymbol{\sigma} \backslash \sigma_i)}.
+\mathcal{L} = \frac{1}{M}\sum_{j=1}^M\sum_{i=1}^N \ln{P(\sigma_i^j | \boldsymbol{\sigma}^j \backslash \sigma_i^j)}.
 ```
 
 For a detailed derivation see ```Pseudo_Likelihood.pdf```.
@@ -63,16 +63,16 @@ In the naive mean field approximation, the self-consistent equations for the Isi
 ```
 
 ```math
-\langle \sigma_i(a) \rangle = \frac{e^{h_i(a) + \sum_{j \neq i}\sum_{b=1}^q J_{ij}(ab) \langle \sigma_j(b) \rangle}}{\sum_{c=1}^q e^{h_i(c) + \sum_{j \neq i}\sum_{b=1}^q J_{ij}(cb) \langle \sigma_j(b) \rangle}},
+\langle \sigma_i(a) \rangle = \frac{e^{h_i(a) + \sum_{j \neq i}\sum_{b=1}^q J_{ij}(a,b) \langle \sigma_j(b) \rangle}}{\sum_{c=1}^q e^{h_i(c) + \sum_{j \neq i}\sum_{b=1}^q J_{ij}(c,b) \langle \sigma_j(b) \rangle}},
 ```
 
-where the coupling parameter $J$ can be recovered through the inversion of the correlation matrix
+where the coupling parameter $J$ can be recovered through the inversion of the covariance matrix
 
 ```math
 J = - C^{-1},
 ```
 
-after which the field parameters can be found through the self consistent equations. For a detailed derivation, see ```Naive_mean_field_approximations.pdf```.
+where for the Potts model the last state is used as a reference state. After this the field parameters can be found through the self consistent equations. For a detailed derivation, see ```Naive_mean_field_approximations.pdf```.
 
 ### TAP
 For the Ising model the TAP equation is given by
@@ -192,11 +192,11 @@ C^{-1}_{ij} = \frac{\tilde{C}_{ij}}{(\tilde{C}_{ij})^2 - (1- \langle \sigma_i \r
 Here $\tilde{C}$ can be isolated and used in the independent pair approximation described above. For a more detailed description I refer to Nguyen & Berg (2012) and Ricci-Tersenghi (2012).
 
 ### Adaptive cluster expansion
-In adaptive cluster expansion, the parameters are inferred based on the extra information clusters provide. First, we start out by getting the entropy and inferred parameters for all sites as if they are independent. This is followed by getting the entropy and parameters of all pairs. The pairs that are kept are the ones where the entropy difference between the independent sites and the pairs is bigger than the hyperparameter $\theta$. Then, larger clusters are built by combining the smaller ones we just kept, and the same entropy difference is determined. This is continued until either there are no more clusters or a max size is reached. In this way, the entropy of the system is determined by summing the base independent entropy with all the extra differences in entropy, and the parameters by Möbius summation of the inferred parameters. The entropy is determined through exact enumeration. For a more detailed description I defer to Cocco & Monasson (2011) and Barton et al. (2016).
+In adaptive cluster expansion, the parameters are inferred based on the extra information clusters provide. First, we start out by getting the entropy and inferred parameters for all sites as if they are independent. This is followed by getting the entropy and parameters of all pairs. The pairs that are kept are the ones where the entropy difference between the independent sites and the pairs is bigger than the hyperparameter $\theta$ in absolute value. Then, larger clusters are built by combining the smaller ones we just kept, and the same entropy difference is determined. This is continued until either there are no more clusters or a max size is reached. In this way, the entropy of the system is determined by summing the base independent entropy with all the extra differences in entropy, and the parameters by Möbius summation of the inferred parameters. The entropy is determined through exact enumeration. For a more detailed description I defer to Cocco & Monasson (2011) and Barton et al. (2016).
 
 ## Regularization
 
-`objectives/regularization.py` provides L2 (ridge) and L1 (lasso) penalties on h and/or J, which can be combined, and `objectives/regularized.py` wraps any objective with them. L2 is the usual choice for plmDCA [Ekeberg 2013] and the cluster expansion [Cocco & Monasson 2011].
+`src/spininfer/objectives/regularization.py` provides L2 (ridge) and L1 (lasso) penalties on h and/or J, which can be combined, and `src/spininfer/objectives/regularized.py` wraps any objective with them. L2 is the usual choice for plmDCA [Ekeberg 2013] and the cluster expansion [Cocco & Monasson 2011].
 
 ## References
 
@@ -211,3 +211,4 @@ In adaptive cluster expansion, the parameters are inferred based on the extra in
 - Barton, J. P., De Leonardis, E., Coucke, A., & Cocco, S. (2016). ACE: adaptive cluster expansion for maximum entropy graphical model inference. Bioinformatics, 32(20), 3089-3097.
 - Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.
 - Nguyen, H. C., Zecchina, R., & Berg, J. (2017). Inverse statistical problems: from the inverse Ising problem to data science. Advances in physics, 66(3), 197-261.
+- Besag, J. (1975). Statistical analysis of non‐lattice data. Journal of the Royal Statistical Society: Series D (The Statistician), 24(3), 179-195.
