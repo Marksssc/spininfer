@@ -2,7 +2,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Sequence
 import numpy as np
-import pandas as pd
 
 from spininfer.data.dataset import Dataset
 from spininfer.models import Model

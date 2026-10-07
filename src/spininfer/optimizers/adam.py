@@ -46,3 +46,8 @@ class Adam:
         if model is not None:
             h_new, J_new = model.project_to_gauge(h_new, J_new)
         return h_new, J_new
+
+    def reset(self) -> None:
+        """Clear the moments such that each run can start with a fresh adam."""
+        self._m_h = None
+        self._t = 0

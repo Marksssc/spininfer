@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "spininfer"
 version = "0.1.0"
@@ -10,15 +14,19 @@ authors = [
     { name = "Mark Schuttelaars", email = "mark.r.schuttelaars@gmail.com" },
 ]
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",
-    "numba>=0.58",
-    "pandas>=2.0",
+    "numba>=0.61",
 ]
 
 [project.urls]
@@ -31,6 +39,7 @@ Issues = "https://github.com/Marksssc/spininfer/issues"
 jax = ["jax>=0.4", "jaxlib>=0.4", "optax>=0.2.8"]
 plots = ["matplotlib>=3.7"]
 msa = ["biopython>=1.81"]
+spikes = ["pandas>=2.0"]
 dev = ["pytest>=7.0"]
 
 [tool.setuptools.packages.find]

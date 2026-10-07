@@ -19,3 +19,6 @@ class GradientAscent:
         if model is not None:
             h_new, J_new = model.project_to_gauge(h_new, J_new)
         return h_new, J_new
+
+    def reset(self) -> None:
+        """A function that does nothing, but needed to match the adam shape."""
