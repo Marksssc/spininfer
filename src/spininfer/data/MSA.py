@@ -1,9 +1,11 @@
 from __future__ import annotations
+import gzip
 from pathlib import Path
 from typing import Sequence
 import numpy as np
 
 from spininfer.data.dataset import Dataset
+from spininfer.models.potts import PottsModel
 from spininfer.models import Model
 
 AMINO_ACID_DICT = {"-": 0,
@@ -43,10 +45,15 @@ _UNKNOWN = -1
 
 
 def _build_lookup_table() -> np.ndarray:
-    """Build a length-128 ASCII lookup table mapping amino-acid characters to their integer state (unknown chars -> -1)."""
+    """Build a length-128 ASCII lookup table mapping amino-acid characters to their integer state.
+
+    Ambiguous residues (X, B, Z, J, U, O) map to the gap state; any other unknown character maps to -1.
+    """
     table = np.full(128, _UNKNOWN, dtype=np.int64)
     for char, state in AMINO_ACID_DICT.items():
         table[ord(char)] = state
+    for char in "XBZJUO":
+        table[ord(char)] = AMINO_ACID_DICT["-"]
     return table
 
 
@@ -63,11 +70,16 @@ def _guess_format(path: str) -> str:
     return _EXTENSION_TO_FORMAT[suffix]
 
 
+def _open_text(path: str):
+    """Open `path` for reading as text, decompressing it first if it ends in .gz."""
+    return gzip.open(path, "rt") if str(path).endswith(".gz") else open(path)
+
+
 def _read_a3m(path: str) -> list[str]:
-    """Parse an a3m/a2m file into aligned sequences, dropping insert-state (lowercase/'.') columns."""
+    """Parse an a3m/a2m file into its raw aligned sequences."""
     sequences = []
     current = []
-    with open(path) as f:
+    with _open_text(path) as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -81,7 +93,20 @@ def _read_a3m(path: str) -> list[str]:
     if current:
         sequences.append("".join(current))
 
-    return ["".join(ch for ch in seq if not (ch.islower() or ch == ".")) for seq in sequences]
+    return sequences
+
+
+def _read_stockholm(path: str) -> list[str]:
+    """Parse a Stockholm file into its raw aligned sequences, keeping '.' and lowercase so inserts can be removed."""
+    sequences: dict[str, list[str]] = {}
+    with _open_text(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or line == "//":
+                continue
+            name, seq = line.split(None, 1)
+            sequences.setdefault(name, []).append(seq.strip())
+    return ["".join(parts) for parts in sequences.values()]
 
 
 def _sequences_to_array(sequences: Sequence[str]) -> np.ndarray:
@@ -101,20 +126,28 @@ def _sequences_to_array(sequences: Sequence[str]) -> np.ndarray:
 
 
 def load_convert_MSA_file(MSA_path: str, fmt: str | None = None) -> np.ndarray:
-    """Load an MSA file (format guessed from extension unless `fmt` is given) and return it as an integer-encoded array."""
+    """Load an MSA file (format guessed from extension unless `fmt` is given) and return it as an integer-encoded array.
+
+    Insert states (lowercase letters and '.', as in Pfam/HMMER alignments) are removed, so only the match columns remain.
+    """
     fmt = fmt or _guess_format(MSA_path)
 
     if fmt in ("a3m", "a2m"):
         sequences = _read_a3m(MSA_path)
+    elif fmt == "stockholm":
+        sequences = _read_stockholm(MSA_path)
     else:
         from Bio import AlignIO
-        alignment = AlignIO.read(MSA_path, fmt)
+        with _open_text(MSA_path) as handle:
+            alignment = AlignIO.read(handle, fmt)
         sequences = [str(record.seq) for record in alignment]
 
+    sequences = ["".join(ch for ch in seq if not (ch.islower() or ch == ".")) for seq in sequences]
     return _sequences_to_array(sequences)
 
 
-def potts_dataset_from_msa(model: Model, MSA_path: str, fmt: str | None = None) -> Dataset:
-    """Load an MSA file and wrap it as a Dataset for `model`."""
+def potts_dataset_from_msa(MSA_path: str, fmt: str | None = None, backend: str = "numba") -> tuple[PottsModel, Dataset]:
+    """Load an MSA file and return a PottsModel sized to it, together with its Dataset."""
     samples = load_convert_MSA_file(MSA_path, fmt=fmt)
-    return Dataset(samples=samples, model=model)
+    model = PottsModel(n_sites=samples.shape[1], n_states=N_AMINO_ACID_STATES, backend=backend)
+    return model, Dataset(samples=samples, model=model)

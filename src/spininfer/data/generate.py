@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from spininfer.models import Model
+from spininfer.data.dataset import Dataset
 
 Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
 
@@ -14,6 +15,7 @@ class SyntheticDataset:
     J: Array
     samples: Array
     seed: int
+    dataset: Dataset
 
 def generate_data(model: Model, n_samples: int, iterations: int = 1000, seed: int = 0,
                    h: Array | None = None, J: Array | None = None,
@@ -22,4 +24,4 @@ def generate_data(model: Model, n_samples: int, iterations: int = 1000, seed: in
     if h is None or J is None:
         h, J = model.random_params(loc_h=loc_h, scale_h=scale_h, loc_J=loc_J, scale_J=scale_J, seed=seed)
     samples = model.simulate(h, J, n_samples, iterations, seed=seed)
-    return SyntheticDataset(h=h, J=J, samples=samples, seed=seed)
+    return SyntheticDataset(h=h, J=J, samples=samples, seed=seed, dataset=Dataset(samples=samples, model=model))

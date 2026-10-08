@@ -32,8 +32,15 @@ class InverseFitter:
         xp = self.model.array_backend.xp
         return xp.linalg.norm(grad.grad_h) + xp.linalg.norm(grad.grad_J)
 
-    def fit(self, h_init: Array, J_init: Array) -> FitResult:
+    def fit(self, h_init: Array | None = None, J_init: Array | None = None) -> FitResult:
         """Run gradient ascent for n_steps (or until convergence), returning the final FitResult."""
+        moments = self.dataset.moments
+        xp = self.model.array_backend.xp
+        if h_init is None:
+            h_init = xp.zeros_like(moments.mean_s)
+        if J_init is None:
+            J_init = xp.zeros_like(moments.mean_ss)
+
         h, J = h_init, J_init
 
         self.optimizer.reset()

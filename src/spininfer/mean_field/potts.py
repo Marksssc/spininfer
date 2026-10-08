@@ -33,7 +33,7 @@ def naive_mean_field(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[
     J = xp.pad(J_zeroed, ((0, 0), (0, 0), (0, 1), (0, 1)))
 
     log_p = xp.log(xp.clip(mean_s, _P_EPS, None))
-    h = log_p - log_p[:, -1:] - xp.einsum('ijab,jb->ia', J, mean_s)
+    h = log_p - log_p[:, -1:] - xp.einsum('ijab,jb->ia', J, mean_s, optimize=True)
 
     return model.apply_gauge(h, J)
 
@@ -72,7 +72,7 @@ def sessak_monasson_approximation(model: PottsModel, mean_s: Array, mean_ss: Arr
     C_per_pair = mean_ss - mean_s[:, None, :, None] * mean_s[None, :, None, :] 
     X = C_per_pair[:, :, :-1, :-1] / mean_s[:, None, :-1, None] - C_per_pair[:, :, -1:, :-1] / mean_s[:, None, -1:, None]
     L = xp.eye(q - 1) * mean_s[:, :-1, None] - mean_s[:, :-1, None] * mean_s[:, None, :-1]
-    S = L[None, :, :, :] - xp.einsum('ijca,ijcb->ijab', C_per_pair[:, :, :-1, :-1], X)
+    S = L[None, :, :, :] - xp.einsum('ijca,ijcb->ijab', C_per_pair[:, :, :-1, :-1], X, optimize=True)
 
     # Here I make sure that the matrix can be inverted
     diag = xp.eye(n, dtype=bool)[:, :, None, None]
@@ -83,7 +83,7 @@ def sessak_monasson_approximation(model: PottsModel, mean_s: Array, mean_ss: Arr
     J_pair = xp.pad(J_zeroed, ((0, 0), (0, 0), (0, 1), (0, 1)))
 
     log_p = xp.log(xp.clip(mean_s, _P_EPS, None))
-    h_pair = log_p - log_p[:, -1:] - xp.einsum('ijab,jb->ia', J_pair, mean_s)
+    h_pair = log_p - log_p[:, -1:] - xp.einsum('ijab,jb->ia', J_pair, mean_s, optimize=True)
 
     h_pair, J_pair = model.apply_gauge(h_pair, J_pair)
 

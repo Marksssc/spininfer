@@ -93,7 +93,7 @@ class IsingModel:
         """Compute the Ising energy for each sample in `samples`, shape (n_samples,)."""
         xp = self.array_backend.xp
         e_h = samples @ h
-        e_J = 0.5 * xp.einsum('ni,ij,nj->n', samples, J, samples)
+        e_J = 0.5 * xp.einsum('ni,ij,nj->n', samples, J, samples, optimize=True)
         return -(e_h + e_J)
 
     def interaction_energy(self, J: Array, mean_ss: Array) -> float:

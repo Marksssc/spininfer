@@ -6,7 +6,7 @@ def value_and_gradient(h, J, data, empirical_mean_s, empirical_mean_ss):
     inv_m = 1.0 / measurements
     one_hot = np.eye(n_states)[data]
 
-    energy = h[None, :, :] + np.einsum('ijab,njb->nia', J, one_hot)
+    energy = h[None, :, :] + np.einsum('ijab,njb->nia', J, one_hot, optimize=True)
 
     max_energy = energy.max(axis=2, keepdims=True) 
     exp_energy = np.exp(energy - max_energy)             
@@ -20,7 +20,7 @@ def value_and_gradient(h, J, data, empirical_mean_s, empirical_mean_ss):
     terms = one_hot - cond_prob
     h_gradient = terms.sum(axis=0) * inv_m
 
-    J_gradient = np.einsum('nia,njb->ijab', terms, one_hot) * inv_m
+    J_gradient = np.einsum('nia,njb->ijab', terms, one_hot, optimize=True) * inv_m
     idx = np.arange(sites)
     J_gradient[idx, idx, :, :] = 0.0
     J_sym = (J_gradient + J_gradient.transpose(1, 0, 3, 2)) / 2.0

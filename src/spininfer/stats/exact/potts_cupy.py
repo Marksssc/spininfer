@@ -15,7 +15,7 @@ def _exact_distribution(h, J):
     one_hot = cp.eye(n_states)[all_states]
 
     e_h = cp.einsum('nia,ia->n', one_hot, h)
-    e_J = cp.einsum('nia,njb,ijab->n', one_hot, one_hot, J) / 2.0
+    e_J = cp.einsum('nia,njb,ijab->n', one_hot, one_hot, J, optimize=True) / 2.0
     energies = e_h + e_J
 
     max_e = energies.max()
@@ -30,7 +30,7 @@ def get_exact_statistics(h, J):
     one_hot, probs, _, _ = _exact_distribution(h, J)
 
     mean_s = cp.einsum('n,nia->ia', probs, one_hot)
-    mean_ss = cp.einsum('n,nia,njb->ijab', probs, one_hot, one_hot)
+    mean_ss = cp.einsum('n,nia,njb->ijab', probs, one_hot, one_hot, optimize=True)
     return mean_s, mean_ss
 
 def get_exact_thermodynamics(h, J):

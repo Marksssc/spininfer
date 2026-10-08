@@ -170,8 +170,15 @@ class LbfgsFitter:
         grad_norm = float(xp.linalg.norm(grad.grad_h) + xp.linalg.norm(grad.grad_J))
         return FitResult(h=h, J=J, converged=converged, n_steps=n_steps, final_grad_norm=grad_norm)
 
-    def fit(self, h_init: Array, J_init: Array) -> FitResult:
+    def fit(self, h_init: Array | None = None, J_init: Array | None = None) -> FitResult:
         """Run L-BFGS to convergence (or maxiter), returning the final FitResult."""
+        moments = self.dataset.moments
+        xp = self.model.array_backend.xp
+        if h_init is None:
+            h_init = xp.zeros_like(moments.mean_s)
+        if J_init is None:
+            J_init = xp.zeros_like(moments.mean_ss)
+        
         if self.convergence is not None:
             self.convergence.reset()
         

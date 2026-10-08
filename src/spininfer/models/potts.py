@@ -102,7 +102,7 @@ class PottsModel:
         """Compute empirical first and second moments (one-hot based) from a sample array of shape (n_samples, n_sites)."""
         one_hot = self.array_backend.xp.eye(self.n_states)[samples]
         mean_s = one_hot.mean(axis=0)             
-        mean_ss = self.array_backend.xp.einsum('nia,njb->ijab', one_hot, one_hot) / samples.shape[0]
+        mean_ss = self.array_backend.xp.einsum('nia,njb->ijab', one_hot, one_hot, optimize=True) / samples.shape[0]
         return Moments(mean_s=mean_s, mean_ss=mean_ss)
 
     def compute_energy(self, h: Array, J: Array, samples: Array) -> Array:
@@ -110,7 +110,7 @@ class PottsModel:
         xp = self.array_backend.xp
         one_hot = xp.eye(self.n_states)[samples]
         e_h = xp.einsum('nia,ia->n', one_hot, h)
-        e_J = 0.5 * xp.einsum('nia,njb,ijab->n', one_hot, one_hot, J)
+        e_J = 0.5 * xp.einsum('nia,njb,ijab->n', one_hot, one_hot, J, optimize=True)
         return -(e_h + e_J)
 
     def interaction_energy(self, J: Array, mean_ss: Array) -> float:

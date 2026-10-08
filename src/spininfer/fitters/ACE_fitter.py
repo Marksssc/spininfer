@@ -28,7 +28,7 @@ class ACEFitter:
     threshold: float
     regularizer: Regularizer = field(default_factory=L2Regularizer)
     max_size: int=15
-    tol: float = 1e-8
+    tol: float = 1e-6
     maxiter: int=1000
 
     def fit(self) -> ClusterExpansionFitResult:

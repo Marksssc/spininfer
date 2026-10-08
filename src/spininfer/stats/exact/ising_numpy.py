@@ -11,7 +11,7 @@ def _exact_distribution(h, J):
     n_sites = h.shape[0]
     all_states = _enumerate_all_states(n_sites)
 
-    energies = np.sum(h * all_states, axis=1) + 0.5 * np.einsum('ni,ij,nj->n', all_states, J, all_states)
+    energies = np.sum(h * all_states, axis=1) + 0.5 * np.einsum('ni,ij,nj->n', all_states, J, all_states, optimize=True)
     max_exp = energies.max()
     weights = np.exp(energies - max_exp)
 
@@ -24,7 +24,7 @@ def get_exact_statistics(h, J):
     all_states, probs, _, _ = _exact_distribution(h, J)
 
     mean_s = np.sum(probs[:, None] * all_states, axis=0)
-    mean_ss = np.einsum('n,ni,nj->ij', probs, all_states, all_states)
+    mean_ss = np.einsum('n,ni,nj->ij', probs, all_states, all_states, optimize=True)
     return mean_s, mean_ss
 
 def get_exact_thermodynamics(h, J):

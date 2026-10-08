@@ -74,17 +74,43 @@ def test_a3m_strips_insert_states(tmp_path):
 
 
 def test_wrong_character_raises(tmp_path):
-    bad_fasta = ">seq1\nACXD\n>seq2\nAC-D\n"
+    bad_fasta = ">seq1\nAC*D\n>seq2\nAC-D\n"
     path = _write(tmp_path, "align.fasta", bad_fasta)
     with pytest.raises(ValueError, match="unrecognized"):
         load_convert_MSA_file(path)
 
 
+def test_ambiguous_residues_become_gaps(tmp_path):
+    path = _write(tmp_path, "align.fasta", ">seq1\nAXBD\n>seq2\nAC-D\n")
+    out = load_convert_MSA_file(path)
+    assert out[0, 1] == AMINO_ACID_DICT["-"]
+    assert out[0, 2] == AMINO_ACID_DICT["-"]
+
+
+def test_stockholm_strips_insert_states(tmp_path):
+    stockholm_with_inserts = "# STOCKHOLM 1.0\nseq1 AC..DE\nseq2 ACgkDE\nseq3 A-..DE\n//\n"
+    path = _write(tmp_path, "align.sto", stockholm_with_inserts)
+    out = load_convert_MSA_file(path)
+
+    expected = np.array([[AMINO_ACID_DICT[c] for c in row] for row in ["ACDE", "ACDE", "A-DE"]])
+    assert np.array_equal(out, expected)
+
+
+def test_gzipped_file_matches_uncompressed(tmp_path):
+    import gzip
+    plain = _write(tmp_path, "align.sto", STOCKHOLM)
+    zipped = tmp_path / "align.sto.gz"
+    with gzip.open(zipped, "wt") as f:
+        f.write(STOCKHOLM)
+    assert np.array_equal(load_convert_MSA_file(str(zipped), fmt="stockholm"), load_convert_MSA_file(plain))
+
+
 def test_potts_dataset_from_msa_(tmp_path):
     path = _write(tmp_path, "align.fasta", FASTA)
-    model = PottsModel(n_sites=4, n_states=len(AMINO_ACID_DICT), backend="numpy")
+    
+    model, dataset = potts_dataset_from_msa(path, backend="numpy")
 
-    dataset = potts_dataset_from_msa(model, path)
-
+    assert isinstance(model, PottsModel)
+    assert (model.n_sites, model.n_states) == (4, len(AMINO_ACID_DICT))
     assert dataset.samples.shape == (2, 4)
     assert dataset.moments.mean_s.shape == (4, len(AMINO_ACID_DICT))
