@@ -4,6 +4,7 @@ from typing import Any
 
 from spininfer.stats.moments import Moments
 from spininfer.models import Model
+from spininfer.models.ising import IsingModel
 
 Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
 
@@ -26,7 +27,8 @@ class Dataset:
             n_sites = self.samples.shape[1]
             if n_sites != self.model.n_sites:
                 raise ValueError(f"data has {n_sites} sites, model expects {self.model.n_sites}")
-            self.samples = xp.asarray(self.samples)
+            dtype = float if isinstance(self.model, IsingModel) else int
+            self.samples = xp.asarray(self.samples, dtype=dtype)
             self.moments = self.model.compute_moments(self.samples)
             if self.n_samples is None:
                 self.n_samples = self.samples.shape[0]

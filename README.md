@@ -7,7 +7,7 @@ Inverse Ising and Potts inference is used wherever you want a maximum-entropy mo
 ## What's in the repo
 
 - **Two models**: Ising (binary ±1 spins) and Potts (`q`-state categorical).
-- **Four array backends**: `numpy`, `numba`, `cupy`, `jax` with the same interface, which can be swapped by an input string. `cupy`/`jax` are optional and the library falls back if these are not installed. Note that JAX by default has float 32 precision. To get float 64 precision run `jax.config.update("jax_enable_x64", True)`.
+- **Four array backends**: `numpy`, `numba`, `cupy`, `jax` with the same interface, which can be swapped by an input string. `cupy`/`jax` are optional. Note that JAX by default has float 32 precision. To get float 64 precision run `jax.config.update("jax_enable_x64", True)`.
 - **Three families of inference methods** (details and references in [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)):
   - *Likelihood-based:* maximum likelihood by moment matching, and pseudolikelihood.
   - *Closed-form mean-field:* naive mean field, TAP, independent pair, Sessak–Monasson and Bethe. These need only the first and second moments. TAP and Bethe are Ising-only.
@@ -46,7 +46,7 @@ GPU packages are optional; without them the library uses the numpy and numba bac
 
 ## Quick example: recovering a known Ising model
 
-As an example, below is some code that generates random parameters (both h and J Gaussians centered around 0). These random parameters are used to generate data and based on this generated data parameters are inferred. These inferred parameters are then compared to the ground truth (for more examples see `scripts`):
+As an example, below is some code that generates random parameters (both h and J Gaussians centered around 0). These random parameters are used to generate data and based on this generated data parameters are inferred. These inferred parameters are then compared to the ground truth (for more examples see `examples`):
 
 ```python
 import numpy as np
@@ -147,7 +147,7 @@ ACE_result = fitter.fit()
 ```
 
 ## Potts models
-Same shapes, different arrays. `h` is `(n_sites, n_states)`, `J` is `(n_sites, n_sites, n_states, n_states)`, and samples are integer state labels. The following code shows the generation of a dataset for the Potts model (for more examples see `scripts`):
+Same shapes, different arrays. `h` is `(n_sites, n_states)`, `J` is `(n_sites, n_sites, n_states, n_states)`, and samples are integer state labels. The following code shows the generation of a dataset for the Potts model (for more examples see `examples`):
 
 ```python
 from spininfer.models.potts import PottsModel
@@ -166,6 +166,7 @@ If your system is small enough to enumerate exactly (roughly `n_sites` up to the
 ```python
 from spininfer.objectives.moment_matching import MomentMatchingObjective
 from spininfer.stats.exact_estimator import ExactEstimator
+from spininfer.stats.mcmc_estimator import McmcEstimator
 
 objective = MomentMatchingObjective(estimator=ExactEstimator())
 fitter = InverseFitter(model=model, dataset=dataset, objective=objective,
@@ -194,7 +195,7 @@ print(ti.free_energy, ti.energy, ti.entropy, ti.heat_capacity)
 
 ```
 
-Thermodynamic integration only needs MCMC samples so it can be used for large systems. The accuracy is set by `n_samples`, `iterations` and the number for integration poitns `n_points`.
+Thermodynamic integration only needs MCMC samples so it can be used for large systems. The accuracy is set by `n_samples`, `iterations` and the number for integration points `n_points`.
 
 
 ## Regularization
@@ -231,7 +232,7 @@ src/spininfer/
   cluster_expansion/  adaptive cluster expansion (cluster fitting, expansion and assembly)
   convergence/        stopping criteria (gradient norm, moment-match agreement)
 docs/                 method overview and derivations (PDF)
-scripts/              standalone recovery demos
+examples/              standalone recovery demos
 tests/                tests, mirroring the package structure
 ```
 

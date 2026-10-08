@@ -1,13 +1,16 @@
 from __future__ import annotations
-from typing import Sequence
+from typing import Sequence, TYPE_CHECKING
 import numpy as np
-import pandas as pd
 
 from spininfer.data.dataset import Dataset
 from spininfer.models import Model
 
+if TYPE_CHECKING:
+    import pandas as pd
+
 def load_dataframe(file_path: str) -> pd.DataFrame:
     """Load a pickled pandas DataFrame from `file_path`."""
+    import pandas as pd
     return pd.read_pickle(file_path)
 
 

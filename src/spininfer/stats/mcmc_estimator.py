@@ -9,7 +9,8 @@ Array = Any  # backend-dependent: numpy.ndarray | cupy.ndarray | jax.Array
 
 @dataclass
 class McmcEstimator:
-    """Estimates moments by drawing MCMC samples from `model` and averaging over them."""
+    """Estimates moments by drawing MCMC samples from `model` and averaging over them, 
+    where one iteration is one flip change proposal."""
 
     n_samples: int
     iterations: int = 1000

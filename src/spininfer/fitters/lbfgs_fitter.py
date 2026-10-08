@@ -172,6 +172,10 @@ class LbfgsFitter:
 
     def fit(self, h_init: Array, J_init: Array) -> FitResult:
         """Run L-BFGS to convergence (or maxiter), returning the final FitResult."""
+        if self.convergence is not None:
+            self.convergence.reset()
+        
         if self.model.backend == "jax":
             return self._fit_jax(h_init, J_init)
         return self._fit_scipy(h_init, J_init)
+    

@@ -38,6 +38,10 @@ class GradientNormConvergence:
             self._below_tol_count = 0
         return self._below_tol_count >= self.patience
 
+    def reset(self) -> None:
+        """Reset the state of the convergence class."""
+        self._below_tol_count = 0
+
 
 @dataclass
 class MomentMatchConvergence:
@@ -90,3 +94,8 @@ class MomentMatchConvergence:
             and abs(slope - 1.0) < self.slope_tol
             and abs(intercept) < self.intercept_tol*xp.abs(real_flat).mean()
         )
+
+    def reset(self) -> None:
+        """Reset the state of the convergence class."""
+        self._below_tol_count = 0
+        self._step = 0
