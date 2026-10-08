@@ -85,7 +85,7 @@ def test_two_state_potts_matches_ising_naive_mean_field(backend, to_numpy):
     m, mss = ising.exact_statistics(h_true, J_true)
     h_ising, J_ising = ising_naive_mean_field(ising, m, mss)
 
-    mean_s, mean_ss = _ising_to_one_hot_moments(m, mss, xp)
+    mean_s, mean_ss = _ising_to_one_hot_moments(to_numpy(m), to_numpy(mss), xp)
 
 
     potts = PottsModel(n_sites=5, n_states=2, backend=backend)
@@ -164,7 +164,7 @@ def test_two_state_potts_matches_ising_ipa(backend, to_numpy):
     m, mss = ising.exact_statistics(h_true, J_true)
     h_ising, J_ising = ising_independent_pair_approximation(ising, m, mss)
 
-    mean_s, mean_ss = _ising_to_one_hot_moments(m, mss, xp)
+    mean_s, mean_ss = _ising_to_one_hot_moments(to_numpy(m), to_numpy(mss), xp)
     potts = PottsModel(n_sites=5, n_states=2, backend=backend)
     h_potts, J_potts = independent_pair_approximation(potts, mean_s, mean_ss)
 
@@ -199,7 +199,7 @@ def test_sessak_monasson_matches_exact_moments(scale_h, scale_J, max_err, backen
 
     h, J = sessak_monasson_approximation(model, mean_s, mean_ss)
 
-    assert np.all(np.isfinite(h)) and np.all(np.isfinite(J))
+    assert np.all(np.isfinite(to_numpy(h))) and np.all(np.isfinite(to_numpy(J)))
     assert np.abs(to_numpy(h) - to_numpy(h_true)).mean() < max_err
     assert np.abs(to_numpy(J) - to_numpy(J_true)).mean() < max_err
 
@@ -274,7 +274,7 @@ def test_two_state_potts_matches_ising_sessak_monasson(backend, to_numpy):
     m, mss = ising.exact_statistics(h_true, J_true)
     h_ising, J_ising = ising_sessak_monasson_approximation(ising, m, mss)
 
-    mean_s, mean_ss = _ising_to_one_hot_moments(m, mss, xp)
+    mean_s, mean_ss = _ising_to_one_hot_moments(to_numpy(m), to_numpy(mss), xp)
     potts = PottsModel(n_sites=5, n_states=2, backend=backend)
     h_potts, J_potts = sessak_monasson_approximation(potts, mean_s, mean_ss)
 

@@ -32,7 +32,7 @@ def test_sub_cluster_matches_its_moments_and_entropy(backend, to_numpy):
     sites = (1, 3, 4)
     fit = fit_cluster(model, dataset, sites=sites)
 
-    cluster_model = PottsModel(n_sites=len(sites), n_states=3, backend="numpy")
+    cluster_model = PottsModel(n_sites=len(sites), n_states=3, backend=backend)
     mean_s, mean_ss = cluster_model.exact_statistics(fit.h, fit.J)
     idx = np.array(sites)
     assert np.allclose(to_numpy(mean_s), to_numpy(dataset.moments.mean_s)[idx], atol=1e-4)

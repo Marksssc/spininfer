@@ -29,7 +29,7 @@ def test_ple_recovery(loc_h, scale_h, loc_J, scale_J, max_err, backend, to_numpy
     h, J = result.h, result.J
 
     h_err = np.abs(to_numpy(h) - to_numpy(truth.h)).mean()
-    J_err = np.abs(J - truth.J).mean()
+    J_err = np.abs(to_numpy(J) - to_numpy(truth.J)).mean()
 
     assert h_err < max_err, f"h recovery error too high: {h_err}"
     assert J_err < max_err, f"J recovery error too high: {J_err}"
