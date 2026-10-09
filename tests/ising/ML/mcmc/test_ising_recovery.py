@@ -8,6 +8,10 @@ from spininfer.stats.mcmc_estimator import McmcEstimator
 from spininfer.optimizers.adam import Adam
 from spininfer.fitters.inverse_fitter import InverseFitter
 from spininfer.convergence.criteria import GradientNormConvergence, MomentMatchConvergence
+import pytest
+
+pytestmark = pytest.mark.slow
+
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, max_err", [
     pytest.param(0.0, 0.2, 0.0, 0.2, 0.05, id="easy_symmetric"),

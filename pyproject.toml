@@ -48,3 +48,9 @@ dev = ["pytest>=7.0"]
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["spininfer*"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: long-running MCMC and recovery tests (run with -m slow)",
+]
+addopts = "-m 'not slow'"

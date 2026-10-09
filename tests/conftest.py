@@ -1,5 +1,7 @@
 import pytest
 import numpy as np
+import numba
+numba.set_num_threads(min(8, numba.config.NUMBA_NUM_THREADS))
 import os
 os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 

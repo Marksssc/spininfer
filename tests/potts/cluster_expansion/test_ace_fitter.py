@@ -18,7 +18,7 @@ def _exact_dataset(backend, n_sites=5, n_states=3, seed=0):
 
 def test_zero_threshold_reproduces_full_fit(backend, to_numpy):
     model, dataset = _exact_dataset(backend)
-    result = ACEFitter(model, dataset, threshold=0.0, regularizer=None, max_size=model.n_sites).fit()
+    result = ACEFitter(model, dataset, threshold=0.0, regularizer=None, max_size=model.n_sites, tol=1e-8).fit()
     full = fit_cluster(model, dataset, sites=range(model.n_sites))
 
     assert np.allclose(to_numpy(result.h), to_numpy(full.h), atol=1e-8)

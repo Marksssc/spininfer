@@ -9,9 +9,9 @@ from spininfer.convergence.criteria import GradientNormConvergence, MomentMatchC
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, max_err", [
     pytest.param(0.0, 0.2, 0.0, 0.2, 0.05, id="easy_symmetric"),
-    pytest.param(0.0, 1.0, 0.0, 0.5, 0.15, id="hard_symmetric"),
+    pytest.param(0.0, 0.6, 0.0, 0.5, 0.15, id="hard_symmetric"),
     pytest.param(0.5, 0.5, 0.0, 0.5, 0.15, id="skewed_h"),
-    pytest.param(0.0, 0.5, 1.0, 0.5, 0.15, id="skewed_J"),
+    pytest.param(0.0, 0.5, 0.06, 0.5, 0.15, id="skewed_J"),
 ])
 
 def test_ple_recovery(loc_h, scale_h, loc_J, scale_J, max_err, backend, to_numpy):

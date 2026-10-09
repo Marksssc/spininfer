@@ -242,7 +242,9 @@ tests/                tests, mirroring the package structure
 
 ```bash
 pip install -e ".[dev]"
-pytest
+pytest                              # fast tests only
+pytest -m slow --backend numba      # slow MCMC/recovery tests
+pytest -m ""                        # everything
 ```
 
 Warning for testing: the full recovery tests (`test_ising_recovery.py`, `test_potts_recovery.py`) run real Metropolis chains and thousands of optimization steps, so the tests can take quite a while to complete.
