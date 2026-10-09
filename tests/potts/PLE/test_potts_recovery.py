@@ -3,7 +3,7 @@ import pytest
 from spininfer.models.potts import PottsModel
 from spininfer.data.generate import generate_data
 from spininfer.data.dataset import Dataset
-from spininfer.objectives.PLE_potts import PlePottsObjective
+from spininfer.objectives.ple_potts import PlePottsObjective
 from spininfer.optimizers.adam import Adam
 from spininfer.fitters.inverse_fitter import InverseFitter
 from spininfer.fitters.lbfgs_fitter import LbfgsFitter

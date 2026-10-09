@@ -125,20 +125,20 @@ def _sequences_to_array(sequences: Sequence[str]) -> np.ndarray:
     return out
 
 
-def load_convert_MSA_file(MSA_path: str, fmt: str | None = None) -> np.ndarray:
+def load_convert_msa_file(msa_path: str, fmt: str | None = None) -> np.ndarray:
     """Load an MSA file (format guessed from extension unless `fmt` is given) and return it as an integer-encoded array.
 
     Insert states (lowercase letters and '.', as in Pfam/HMMER alignments) are removed, so only the match columns remain.
     """
-    fmt = fmt or _guess_format(MSA_path)
+    fmt = fmt or _guess_format(msa_path)
 
     if fmt in ("a3m", "a2m"):
-        sequences = _read_a3m(MSA_path)
+        sequences = _read_a3m(msa_path)
     elif fmt == "stockholm":
-        sequences = _read_stockholm(MSA_path)
+        sequences = _read_stockholm(msa_path)
     else:
         from Bio import AlignIO
-        with _open_text(MSA_path) as handle:
+        with _open_text(msa_path) as handle:
             alignment = AlignIO.read(handle, fmt)
         sequences = [str(record.seq) for record in alignment]
 
@@ -146,8 +146,8 @@ def load_convert_MSA_file(MSA_path: str, fmt: str | None = None) -> np.ndarray:
     return _sequences_to_array(sequences)
 
 
-def potts_dataset_from_msa(MSA_path: str, fmt: str | None = None, backend: str = "numba") -> tuple[PottsModel, Dataset]:
+def potts_dataset_from_msa(msa_path: str, fmt: str | None = None, backend: str = "numba") -> tuple[PottsModel, Dataset]:
     """Load an MSA file and return a PottsModel sized to it, together with its Dataset."""
-    samples = load_convert_MSA_file(MSA_path, fmt=fmt)
+    samples = load_convert_msa_file(msa_path, fmt=fmt)
     model = PottsModel(n_sites=samples.shape[1], n_states=N_AMINO_ACID_STATES, backend=backend)
     return model, Dataset(samples=samples, model=model)

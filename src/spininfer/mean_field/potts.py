@@ -59,7 +59,7 @@ def independent_pair_approximation(model: PottsModel, mean_s: Array, mean_ss: Ar
     h, J = model.apply_gauge(h, J)
     return h, J
 
-def TAP_mean_field(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
+def tap_mean_field(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
     raise NotImplementedError("This method is not yet currently implemented for the Potts model")
 
 def sessak_monasson_approximation(model: PottsModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:

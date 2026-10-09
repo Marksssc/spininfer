@@ -3,7 +3,7 @@ import pytest
 from spininfer.models.ising import IsingModel
 from spininfer.data.generate import generate_data
 from spininfer.data.dataset import Dataset
-from spininfer.objectives.PLE_ising import PleIsingObjective
+from spininfer.objectives.ple_ising import PleIsingObjective
 from spininfer.fitters.lbfgs_fitter import LbfgsFitter
 from spininfer.convergence.criteria import GradientNormConvergence, MomentMatchConvergence
 

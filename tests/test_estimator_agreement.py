@@ -12,8 +12,8 @@ def test_ising_exact_matches_mcmc(backend, to_numpy):
     exact = ExactEstimator().estimate(model, h, J)
     mcmc = McmcEstimator(n_samples=20_000, iterations=10 * 2_000, seed=1).estimate(model, h, J)
 
-    assert np.allclose(to_numpy(exact.mean_s), to_numpy(mcmc.mean_s), atol=0.02)
-    assert np.allclose(to_numpy(exact.mean_ss), to_numpy(mcmc.mean_ss), atol=0.02)
+    assert np.allclose(to_numpy(exact.mean_s), to_numpy(mcmc.mean_s), atol=5.0 / np.sqrt(20_000))
+    assert np.allclose(to_numpy(exact.mean_ss), to_numpy(mcmc.mean_ss), atol=5.0 / np.sqrt(20_000))
 
 
 def test_potts_exact_matches_mcmc(backend, to_numpy):

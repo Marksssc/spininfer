@@ -33,7 +33,7 @@ def naive_mean_field(model: IsingModel, mean_s: Array, mean_ss: Array) -> tuple[
     h, J = model.apply_gauge(h, J)
     return h, J
 
-def TAP_mean_field(model: IsingModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
+def tap_mean_field(model: IsingModel, mean_s: Array, mean_ss: Array) -> tuple[Array, Array]:
     """Thouless-Anderson-Palmer (TAP) approximation for the Ising model with the Onsager term.
     
     The coupling is J = (-1 + sqrt(1 - 8 m_i m_j (C^-1)_ij))/(4 m_i m_j), 

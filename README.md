@@ -54,7 +54,7 @@ import numpy as np
 from spininfer.models.ising import IsingModel
 from spininfer.data.generate import generate_data
 from spininfer.data.dataset import Dataset
-from spininfer.objectives.PLE_ising import PleIsingObjective
+from spininfer.objectives.ple_ising import PleIsingObjective
 from spininfer.optimizers.adam import Adam
 from spininfer.fitters.inverse_fitter import InverseFitter
 from spininfer.convergence.criteria import GradientNormConvergence
@@ -139,7 +139,7 @@ Another method that is good at recovering strong coupling is adaptive cluster ex
 
 ```python
 # Adaptive cluster expansion
-from spininfer.fitters.ACE_fitter import ACEFitter
+from spininfer.fitters.ace_fitter import ACEFitter
 
 theta = 1e-3
 fitter = ACEFitter(model=model, dataset=dataset, threshold=theta)
@@ -249,6 +249,11 @@ Warning for testing: the full recovery tests (`test_ising_recovery.py`, `test_po
 
 ## Notes
 - **Gauge fixing:** `model.apply_gauge` is applied after every optimizer step so that `h` and `J` stay in a consistent, symmetric, zero-diagonal representation. If comparing recovered parameters against another library, ensure both are evaluated in the same gauge.
+- **Numba threads for small systems:** the numba kernels run in parallel over all CPU cores by default. For small systems each call does very little work, so the cost of coordinating many threads dominates, and using fewer threads is often much faster. Set this at the start of your script or notebook:
+  ```python
+  import numba
+  numba.set_num_threads(8)
+  ```
 
 ## Roadmap
 - **Minimum probability flow:** The minimum probability flow algorithm will be implemented.

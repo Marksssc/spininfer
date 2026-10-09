@@ -5,7 +5,7 @@ from spininfer.data.dataset import Dataset
 from spininfer.stats.moments import Moments
 from spininfer.convergence.criteria import FitResult
 from spininfer.cluster_expansion._cluster_fit import fit_cluster
-from spininfer.fitters.ACE_fitter import ACEFitter
+from spininfer.fitters.ace_fitter import ACEFitter
 
 
 def _exact_dataset(backend, n_sites=5, n_states=3, seed=0):

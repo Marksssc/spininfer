@@ -3,7 +3,7 @@ import importlib
 import numpy as np
 import pytest
 from spininfer.models.ising import IsingModel
-from spininfer.objectives import PLE_ising_numpy
+from spininfer.objectives import ple_ising_numpy
 
 
 def test_consistency(backend, to_numpy):
@@ -20,9 +20,9 @@ def test_consistency(backend, to_numpy):
     mean_s = data.mean(axis=0)
     mean_ss = (data.T @ data) / data.shape[0]
 
-    val_np, hg_np, Jg_np = PLE_ising_numpy.value_and_gradient(h, J, data, mean_s, mean_ss)
+    val_np, hg_np, Jg_np = ple_ising_numpy.value_and_gradient(h, J, data, mean_s, mean_ss)
 
-    kernel = importlib.import_module(f"spininfer.objectives.PLE_ising_{backend}")
+    kernel = importlib.import_module(f"spininfer.objectives.ple_ising_{backend}")
     xp = IsingModel(n_sites=2, backend=backend).array_backend.xp
     val, hg, Jg = kernel.value_and_gradient(*map(xp.asarray, (h, J, data, mean_s, mean_ss)))
 

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 from spininfer.models.ising import IsingModel
-from spininfer.mean_field.ising import naive_mean_field, TAP_mean_field, independent_pair_approximation, sessak_monasson_approximation, bethe_approximation
+from spininfer.mean_field.ising import naive_mean_field, tap_mean_field, independent_pair_approximation, sessak_monasson_approximation, bethe_approximation
 
 
 @pytest.mark.parametrize("scale_h, scale_J, max_err", [
@@ -60,7 +60,7 @@ def test_tap_matches_exact_moments(scale_h, scale_J, max_err, backend, to_numpy)
                                           scale_J=scale_J / np.sqrt(model.n_sites), seed=1)
     mean_s, mean_ss = model.exact_statistics(h_true, J_true)
 
-    h_tap, J_tap = TAP_mean_field(model, mean_s, mean_ss)
+    h_tap, J_tap = tap_mean_field(model, mean_s, mean_ss)
 
     assert np.all(np.isfinite(to_numpy(h_tap))) and np.all(np.isfinite(to_numpy(J_tap)))
     h_err = np.abs(to_numpy(h_tap - h_true)).mean()
@@ -78,7 +78,7 @@ def test_tap_beats_naive_mean_field_at_moderate_coupling(seed, backend, to_numpy
     mean_s, mean_ss = model.exact_statistics(h_true, J_true)
 
     h_n, J_n = naive_mean_field(model, mean_s, mean_ss)
-    h_t, J_t = TAP_mean_field(model, mean_s, mean_ss)
+    h_t, J_t = tap_mean_field(model, mean_s, mean_ss)
 
     assert np.abs(to_numpy(J_t - J_true)).mean() < np.abs(to_numpy(J_n - J_true)).mean()
     assert np.abs(to_numpy(h_t - h_true)).mean() < np.abs(to_numpy(h_n - h_true)).mean()
@@ -93,7 +93,7 @@ def test_tap_reduces_to_naive_mean_field_at_zero_magnetisation(backend, to_numpy
     mean_s, mean_ss = model.exact_statistics(h_zero, J_true)
 
     h_n, J_n = naive_mean_field(model, mean_s, mean_ss)
-    h_t, J_t = TAP_mean_field(model, mean_s, mean_ss)
+    h_t, J_t = tap_mean_field(model, mean_s, mean_ss)
 
     assert np.allclose(to_numpy(J_t), to_numpy(J_n))
     assert np.allclose(to_numpy(h_t), to_numpy(h_n), atol=1e-6)
@@ -104,7 +104,7 @@ def test_tap_J_has_zero_diagonal_and_is_symmetric(backend, to_numpy):
     h_true, J_true = model.random_params(seed=3)
     mean_s, mean_ss = model.exact_statistics(h_true, J_true)
 
-    _, J_tap = TAP_mean_field(model, mean_s, mean_ss)
+    _, J_tap = tap_mean_field(model, mean_s, mean_ss)
 
     assert np.allclose(np.diag(to_numpy(J_tap)), 0.0)
     assert np.allclose(to_numpy(J_tap), to_numpy(J_tap.T))
@@ -118,7 +118,7 @@ def test_tap_satisfies_its_own_self_consistency_equation(backend, to_numpy):
                                           scale_J=0.5 / np.sqrt(model.n_sites), seed=2)
     m, mean_ss = model.exact_statistics(h_true, J_true)
 
-    h, J = TAP_mean_field(model, m, mean_ss)
+    h, J = tap_mean_field(model, m, mean_ss)
     onsager = m * xp.sum(J**2 * (1.0 - m[None, :]**2), axis=1)
     m_tap = xp.tanh(h + J @ m - onsager)
 
@@ -300,7 +300,7 @@ def test_bethe_beats_other_methods_on_a_strongly_coupled_tree(backend, to_numpy)
     mean_s, mean_ss = model.exact_statistics(h_true, J_true)
 
     err_bethe = np.abs(to_numpy(bethe_approximation(model, mean_s, mean_ss)[1]) - to_numpy(J_true)).mean()
-    for method in (naive_mean_field, TAP_mean_field, independent_pair_approximation,
+    for method in (naive_mean_field, tap_mean_field, independent_pair_approximation,
                    sessak_monasson_approximation):
         err = np.abs(to_numpy(method(model, mean_s, mean_ss)[1]) - to_numpy(J_true)).mean()
         assert err_bethe < err, f"{method.__name__} error {err} not above Bethe {err_bethe}"

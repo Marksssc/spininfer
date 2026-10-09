@@ -4,8 +4,8 @@ from spininfer.models.ising import IsingModel
 from spininfer.models.potts import PottsModel
 from spininfer.data.generate import generate_data
 from spininfer.data.dataset import Dataset
-from spininfer.objectives.PLE_ising import PleIsingObjective
-from spininfer.objectives.PLE_potts import PlePottsObjective
+from spininfer.objectives.ple_ising import PleIsingObjective
+from spininfer.objectives.ple_potts import PlePottsObjective
 from spininfer.objectives.moment_matching import MomentMatchingObjective
 from spininfer.stats.mcmc_estimator import McmcEstimator
 from spininfer.fitters.lbfgs_fitter import LbfgsFitter

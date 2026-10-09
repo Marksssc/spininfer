@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from spininfer.objectives import PLE_potts_numpy, PLE_potts_numba
+from spininfer.objectives import ple_potts_numba, ple_potts_numpy
 
 
 def _make_problem(rng, sites=6, n_states=3, n_samples=200):
@@ -35,7 +35,7 @@ def _central_diff_directional_derivative(value_fn, h, J, dh, dJ, data,
     return (v_plus - v_minus) / (2 * eps)
 
 
-@pytest.mark.parametrize("kernel", [PLE_potts_numpy, PLE_potts_numba],
+@pytest.mark.parametrize("kernel", [ple_potts_numpy, ple_potts_numba],
                           ids=["numpy", "numba"])
 def test_gradient_matches_finite_difference(kernel):
     rng = np.random.default_rng(0)

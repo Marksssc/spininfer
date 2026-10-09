@@ -37,7 +37,7 @@ class TAPMeanFieldFitter:
     def fit(self) -> FitResult:
         """Get the parameters with the TAP method."""
         moments = self.dataset.moments
-        h, J = _mean_field_module(self.model).TAP_mean_field(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
+        h, J = _mean_field_module(self.model).tap_mean_field(model=self.model, mean_s=moments.mean_s, mean_ss=moments.mean_ss)
         return FitResult(h=h, J=J, converged=True, n_steps=1, final_grad_norm=float("nan"))
 
 @dataclass

@@ -28,13 +28,13 @@ J is symmetric with zero diagonal (blocks). Papers often write the pair sum as �
 | Method | Code | Speed | Exact? | Derivation | References |
 |---|---|---|---|---|---|
 | Maximum likelihood (moment matching) | `src/spininfer/objectives/moment_matching.py` with `src/spininfer/fitters/` | slow | yes (with exact statistics) | `Maximum_Likelihood.pdf` | Schneidman 2006; Nguyen 2017 |
-| Pseudo-likelihood | `src/spininfer/objectives/PLE_ising.py`, `src/spininfer/objectives/PLE_potts.py` | fast | consistent for many samples | `Pseudo_Likelihood.pdf` | Besag 1974; Besag 1975; Ekeberg 2013 |
+| Pseudo-likelihood | `src/spininfer/objectives/ple_ising.py`, `src/spininfer/objectives/ple_potts.py` | fast | consistent for many samples | `Pseudo_Likelihood.pdf` | Besag 1974; Besag 1975; Ekeberg 2013 |
 | Naive mean field | `src/spininfer/mean_field/ising.py`, `src/spininfer/mean_field/potts.py` | closed form | weak coupling only | `Naive_mean_field_approximations.pdf` | Roudi 2009 |
 | TAP | `src/spininfer/mean_field/ising.py` (Ising only) | closed form | weak coupling only | — | Thouless 1977; Roudi 2009 |
 | Independent pair | `src/spininfer/mean_field/ising.py`, `src/spininfer/mean_field/potts.py` | closed form | isolated pairs | — | Roudi 2009 |
 | Sessak–Monasson | `src/spininfer/mean_field/ising.py`, `src/spininfer/mean_field/potts.py` | closed form | small correlations | — | Sessak & Monasson 2009 |
 | Bethe | `src/spininfer/mean_field/ising.py` (Ising only) | closed form | tree-like | — | Nguyen & Berg 2012; Ricci-Tersenghi 2012 |
-| Adaptive cluster expansion | `src/spininfer/cluster_expansion/`, `src/spininfer/fitters/ACE_fitter.py` | medium | yes as threshold → 0 | — | Cocco & Monasson 2011; Barton 2016 |
+| Adaptive cluster expansion | `src/spininfer/cluster_expansion/`, `src/spininfer/fitters/ace_fitter.py` | medium | yes as threshold → 0 | — | Cocco & Monasson 2011; Barton 2016 |
 
 ## Short description
 ### Maximum likelihood
