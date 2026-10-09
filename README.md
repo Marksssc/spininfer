@@ -216,6 +216,7 @@ regularized = RegularizedObjective(
 
 ```
 src/spininfer/
+  analysis/           code to analyze the results: Frobenius norm with APC
   backend/            array-backend functions and loading
   models/             IsingModel, PottsModel: validation, simulation, moments, gauge fixing
   stats/
@@ -232,7 +233,7 @@ src/spininfer/
   cluster_expansion/  adaptive cluster expansion (cluster fitting, expansion and assembly)
   convergence/        stopping criteria (gradient norm, moment-match agreement)
 docs/                 method overview and derivations (PDF)
-examples/              standalone recovery demos
+examples/             demos of how to use an apply this library
 tests/                tests, mirroring the package structure
 ```
 
