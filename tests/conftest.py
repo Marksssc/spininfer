@@ -1,5 +1,7 @@
 import pytest
 import numpy as np
+import os
+os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
 
 try:
     import jax

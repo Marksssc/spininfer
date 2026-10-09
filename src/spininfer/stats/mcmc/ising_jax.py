@@ -3,9 +3,9 @@ import jax.numpy as jnp
 from jax import random
 from functools import partial
 
-def _metropolis_step(carry, key):
-    lattice, h, J = carry
-    site_key, accept_key = random.split(key)
+def _metropolis_step(carry, _, h, J):
+    lattice, key = carry
+    key, site_key, accept_key = random.split(key, 3)
 
     site = random.randint(site_key, (), 0, h.shape[0])
     local_field = jnp.dot(J[site], lattice) + h[site]
@@ -15,15 +15,16 @@ def _metropolis_step(carry, key):
 
     new_spin = jnp.where(accept, -lattice[site], lattice[site])
     lattice = lattice.at[site].set(new_spin)
-    return (lattice, h, J), None
+    return (lattice, key), None
+
 
 def _simulate_one_chain(h, J, key, iterations):
     n_sites = h.shape[0]
     init_key, run_key = random.split(key)
     lattice = random.choice(init_key, jnp.array([-1.0, 1.0]), shape=(n_sites,))
 
-    step_keys = random.split(run_key, iterations)
-    (final_lattice, _, _), _ = jax.lax.scan(_metropolis_step, (lattice, h, J), step_keys)
+    step = partial(_metropolis_step, h=h, J=J)
+    (final_lattice, _), _ = jax.lax.scan(step, (lattice, run_key), None, length=iterations)
     return final_lattice
 
 @partial(jax.jit, static_argnames=['samples', 'iterations'])
