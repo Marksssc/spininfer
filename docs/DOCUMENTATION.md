@@ -201,7 +201,7 @@ In adaptive cluster expansion, the parameters are inferred based on the extra in
 ## References
 
 - Thouless, D. J., Anderson, P. W., & Palmer, R. G. (1977). 'Solution of solvable model of a spin glass'. Philosophical Magazine, 35(3), 593-601.
-- Roudi, Y., Aurell, E., & Hertz, J. A. (2009). Statistical physics of pairwise probability models. Frontiers in computational neuroscience, 3, 652.
+- Roudi, Y., Aurell, E., & Hertz, J. A. (2009). Statistical physics of pairwise probability models. Frontiers in Computational Neuroscience, 3, 22.
 - Ekeberg, M., Lövkvist, C., Lan, Y., Weigt, M., & Aurell, E. (2013). Improved contact prediction in proteins: using pseudolikelihoods to infer Potts models. Physical Review E—Statistical, Nonlinear, and Soft Matter Physics, 87(1), 012707.
 - Cocco, S., & Monasson, R. (2011). Adaptive cluster expansion for inferring Boltzmann machines with noisy data. Physical review letters, 106(9), 090601.
 - Schneidman, E., Berry, M. J., Segev, R., & Bialek, W. (2006). Weak pairwise correlations imply strongly correlated network states in a neural population. Nature, 440(7087), 1007-1012.
@@ -212,3 +212,5 @@ In adaptive cluster expansion, the parameters are inferred based on the extra in
 - Besag, J. (1974). Spatial interaction and the statistical analysis of lattice systems. Journal of the Royal Statistical Society: Series B (Methodological), 36(2), 192-225.
 - Nguyen, H. C., Zecchina, R., & Berg, J. (2017). Inverse statistical problems: from the inverse Ising problem to data science. Advances in physics, 66(3), 197-261.
 - Besag, J. (1975). Statistical analysis of non‐lattice data. Journal of the Royal Statistical Society: Series D (The Statistician), 24(3), 179-195.
+- Dunn, S. D., Wahl, L. M., & Gloor, G. B. (2008). Mutual information without the influence of phylogeny or entropy dramatically improves residue contact prediction. Bioinformatics, 24(3), 333-340.
+- Mistry, J., Chuguransky, S., Williams, L., Qureshi, M., Salazar, G. A., Sonnhammer, E. L. L., Tosatto, S. C. E., Paladin, L., Raj, S., Richardson, L. J., Finn, R. D., & Bateman, A. (2021). Pfam: The protein families database in 2021. Nucleic Acids Research, 49(D1), D412-D419.

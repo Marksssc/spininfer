@@ -15,7 +15,7 @@ pytestmark = pytest.mark.slow
 
 @pytest.mark.parametrize("loc_h, scale_h, loc_J, scale_J, n_states, max_err", [
     pytest.param(0.0, 0.2, 0.0, 0.2, 3, 0.05, id="easy_symmetric_3"),
-    pytest.param(0.0, 0.5, 0.0, 0.5, 3, 0.15, id="hard_symmetric_3"),
+    pytest.param(0.0, 0.8, 0.0, 0.5, 3, 0.15, id="hard_symmetric_3"),
     pytest.param(0.0, 0.2, 0.0, 0.2, 5, 0.05, id="easy_symmetric_5"),
     pytest.param(0.0, 0.5, 0.0, 0.5, 5, 0.2,  id="hard_symmetric_5"),
     pytest.param(0.5, 0.5, 0.0, 0.5, 3, 0.15, id="skewed_h"),

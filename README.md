@@ -42,6 +42,15 @@ pip install -U "jax[cuda12]"  # For CUDA 12
 pip install -U "jax[cuda13]"  # For CUDA 13
 ```
 
+Optional extras:
+
+```bash
+pip install -e ".[jax]"     # JAX backend, including optax for L-BFGS
+pip install -e ".[plots]"   # matplotlib, needed for the example notebooks
+pip install -e ".[msa]"     # Biopython, only needed for FASTA/Clustal/Phylip alignments (Stockholm and a3m work without it)
+pip install -e ".[spikes]"  # pandas, for loading spike data from DataFrames
+```
+
 GPU packages are optional; without them the library uses the numpy and numba backends.
 
 ## Quick example: recovering a known Ising model
@@ -233,7 +242,7 @@ src/spininfer/
   cluster_expansion/  adaptive cluster expansion (cluster fitting, expansion and assembly)
   convergence/        stopping criteria (gradient norm, moment-match agreement)
 docs/                 method overview and derivations (PDF)
-examples/             demos of how to use an apply this library
+examples/             demos of how to use and apply this library
 tests/                tests, mirroring the package structure
 ```
 
