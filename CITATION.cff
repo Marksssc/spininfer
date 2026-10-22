@@ -10,7 +10,7 @@ authors:
     orcid: "https://orcid.org/0009-0009-1898-2392"
 version: 0.1.0
 date-released: 2026-10-22
-# doi: 10.5281/zenodo.XXXXXXX
+doi: 10.5281/zenodo.23568016
 license: MIT
 repository-code: "https://github.com/Marksssc/spininfer"
 keywords:

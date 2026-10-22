@@ -1,5 +1,7 @@
 # spininfer
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23568016.svg)](https://doi.org/10.5281/zenodo.23568016)
+
 This repository is a multi-backend library for parameter inference in the Ising and Potts models, featuring mean-field, adaptive cluster expansion, maximum likelihood, and pseudo likelihood methods, along with thermodynamic variable extraction on the CPU (NumPy and Numba) and GPU (CuPy and JAX).
 
 Inverse Ising and Potts inference is used wherever you want a maximum-entropy model that reproduces the means and pairwise correlations of the data and makes the fewest other assumptions. In neuroscience, this means modelling N neurons recorded over T time bins with discrete states. In protein structure analysis, a multiple sequence alignment (MSA) is modelled as a 21-state Potts model, which is the basis of contact prediction.
@@ -274,6 +276,21 @@ Warning for testing: the full recovery tests (`test_ising_recovery.py`, `test_po
   import numba
   numba.set_num_threads(8)
   ```
+
+## Citation
+
+If you use spininfer in your work, please cite it:
+
+```bibtex
+@software{schuttelaars_spininfer,
+  author    = {Schuttelaars, Mark Robert},
+  title     = {spininfer: multi-backend inference of Ising and Potts models},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.23568016},
+  url       = {https://doi.org/10.5281/zenodo.23568016},
+  year      = {2026}
+}
+```
 
 ## Acknowledgements
 This project started as a research project in the Bauer lab at TU Delft. I would like to thank Marianne Bauer and Olivier Witteveen.
