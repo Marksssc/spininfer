@@ -1,8 +1,13 @@
+import importlib.util
+
 import numpy as np
 import pytest
 
 from spininfer.models.potts import PottsModel
 from spininfer.data.msa import (AMINO_ACID_DICT, load_convert_msa_file, potts_dataset_from_msa)
+
+requires_biopython = pytest.mark.skipif(importlib.util.find_spec("Bio") is None,
+                                        reason="needs biopython (pip install -e \".[msa]\")")
 
 
 FASTA = """\
@@ -33,6 +38,7 @@ def _write(tmp_path, name, content):
     return str(path)
 
 
+@requires_biopython
 def test_fasta_matches_expected_states(tmp_path):
     path = _write(tmp_path, "align.fasta", FASTA)
     out = load_convert_msa_file(path)
@@ -50,6 +56,7 @@ def test_stockholm_parses_via_extension(tmp_path):
     assert out.shape == (2, 4)
 
 
+@requires_biopython
 def test_explicit_format_overrides_extension(tmp_path):
     path = _write(tmp_path, "align.txt", FASTA)
     out = load_convert_msa_file(path, fmt="fasta")
@@ -73,6 +80,7 @@ def test_a3m_strips_insert_states(tmp_path):
     assert np.array_equal(out, expected)
 
 
+@requires_biopython
 def test_wrong_character_raises(tmp_path):
     bad_fasta = ">seq1\nAC*D\n>seq2\nAC-D\n"
     path = _write(tmp_path, "align.fasta", bad_fasta)
@@ -80,6 +88,7 @@ def test_wrong_character_raises(tmp_path):
         load_convert_msa_file(path)
 
 
+@requires_biopython
 def test_ambiguous_residues_become_gaps(tmp_path):
     path = _write(tmp_path, "align.fasta", ">seq1\nAXBD\n>seq2\nAC-D\n")
     out = load_convert_msa_file(path)
@@ -105,6 +114,7 @@ def test_gzipped_file_matches_uncompressed(tmp_path):
     assert np.array_equal(load_convert_msa_file(str(zipped), fmt="stockholm"), load_convert_msa_file(plain))
 
 
+@requires_biopython
 def test_potts_dataset_from_msa_(tmp_path):
     path = _write(tmp_path, "align.fasta", FASTA)
     
