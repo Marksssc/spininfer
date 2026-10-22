@@ -28,6 +28,15 @@ cd spininfer
 pip install -e .
 ```
 
+If `pip install -e .` fails with an error about a missing `build_editable` hook, your pip is too old (for example the system pip on Ubuntu 22.04). Install into a virtual environment with an up-to-date pip instead:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -U pip
+pip install -e .
+```
+
 You'll need `numpy`, `scipy`, and `numba` at minimum. If you have a CUDA GPU and want to use the significantly faster GPU implementations, you'll need to install these packages to match your CUDA version. You can check this with nvidia-smi in your terminal. For CuPy run
 
 ```bash
@@ -265,6 +274,9 @@ Warning for testing: the full recovery tests (`test_ising_recovery.py`, `test_po
   import numba
   numba.set_num_threads(8)
   ```
+
+## Acknowledgements
+This project started as a research project in the Bauer lab at TU Delft. I would like to thank Marianne Bauer and Olivier Witteveen.
 
 ## Roadmap
 - **Minimum probability flow:** The minimum probability flow algorithm will be implemented.
